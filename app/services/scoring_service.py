@@ -247,6 +247,113 @@ def get_ranking_jornada(jornada: int) -> list[dict]:
     return ranking
 
 
+def get_ranking_evolucion() -> dict:
+    """
+    Evolución acumulada de puntos por usuario a lo largo de los partidos finalizados.
+    Devuelve labels (días con partidos finalizados) y una serie acumulada por usuario.
+    """
+    usuarios = Usuario.query.filter_by(es_administrador=False).order_by(Usuario.username).all()
+    usuarios = [u for u in usuarios if u.username != "invitado"]
+
+    # Predicciones de partidos finalizados, ordenadas por fecha del partido
+    rows = (
+        db.session.query(Prediccion.usuario_id, Prediccion.puntos_ganados, Partido.fecha_partido)
+        .join(Partido, Prediccion.partido_id == Partido.id)
+        .filter(Partido.finalizado == True)  # noqa: E712
+        .order_by(Partido.fecha_partido.asc())
+        .all()
+    )
+
+    # Agrupar por día
+    dias = []
+    puntos_por_dia: dict[str, dict[int, float]] = {}
+    for usuario_id, puntos, fecha in rows:
+        dia = fecha.strftime("%d/%m")
+        if dia not in puntos_por_dia:
+            puntos_por_dia[dia] = {}
+            dias.append(dia)
+        puntos_por_dia[dia][usuario_id] = puntos_por_dia[dia].get(usuario_id, 0.0) + (puntos or 0.0)
+
+    series = []
+    for u in usuarios:
+        acumulado = 0.0
+        data = []
+        for dia in dias:
+            acumulado += puntos_por_dia[dia].get(u.id, 0.0)
+            data.append(round(acumulado, 2))
+        series.append({"usuario_id": u.id, "username": u.username, "data": data})
+
+    return {"labels": dias, "series": series}
+
+
+def get_insignias() -> dict:
+    """
+    Calcula insignias por usuario:
+    - racha_actual: aciertos consecutivos contando desde el último partido finalizado hacia atrás.
+    - mejor_racha: mayor racha histórica de aciertos consecutivos.
+    - plenos: nº de fases completadas donde acertó todos los partidos (habiéndolos pronosticado todos).
+    """
+    usuarios = Usuario.query.filter_by(es_administrador=False).all()
+    usuarios = [u for u in usuarios if u.username != "invitado"]
+
+    # Partidos por jornada (solo los finalizados cuentan para plenos)
+    jornadas = get_jornadas_disponibles()
+    completadas = {j["jornada"]: j["total_partidos"] for j in jornadas if j["completada"]}
+
+    resultado = {}
+    for u in usuarios:
+        rows = (
+            db.session.query(Prediccion.pronostico, Partido.resultado_real, Partido.jornada)
+            .join(Partido, Prediccion.partido_id == Partido.id)
+            .filter(
+                Prediccion.usuario_id == u.id,
+                Partido.finalizado == True,  # noqa: E712
+            )
+            .order_by(Partido.fecha_partido.asc())
+            .all()
+        )
+
+        # Rachas
+        racha_actual = 0
+        mejor_racha = 0
+        racha = 0
+        for pronostico, real, _ in rows:
+            if pronostico == real:
+                racha += 1
+                mejor_racha = max(mejor_racha, racha)
+            else:
+                racha = 0
+        # racha_actual: desde el final hacia atrás
+        for pronostico, real, _ in reversed(rows):
+            if pronostico == real:
+                racha_actual += 1
+            else:
+                break
+
+        # Plenos por fase completada
+        plenos = []
+        aciertos_por_jornada: dict[int, int] = {}
+        pred_por_jornada: dict[int, int] = {}
+        for pronostico, real, jornada in rows:
+            pred_por_jornada[jornada] = pred_por_jornada.get(jornada, 0) + 1
+            if pronostico == real:
+                aciertos_por_jornada[jornada] = aciertos_por_jornada.get(jornada, 0) + 1
+        for jornada, total in completadas.items():
+            if (
+                pred_por_jornada.get(jornada, 0) == total
+                and aciertos_por_jornada.get(jornada, 0) == total
+            ):
+                plenos.append(jornada)
+
+        resultado[u.id] = {
+            "racha_actual": racha_actual,
+            "mejor_racha": mejor_racha,
+            "plenos": plenos,
+        }
+
+    return resultado
+
+
 def get_jornadas_disponibles() -> list[dict]:
     """
     Devuelve la lista de jornadas con su estado (partidos totales / finalizados).

@@ -115,6 +115,19 @@
         </div>
     </div>
 
+    <!-- Evolución del ranking -->
+    <div id="evolution-card" class="card p-5 sm:p-6 mb-8 hidden animate-slideUp" style="animation-delay: 0.22s">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h2 class="font-display text-lg font-bold text-white">📈 Evolución de la porra</h2>
+                <p class="text-xs text-zinc-500 mt-0.5">Puntos acumulados por día de partidos</p>
+            </div>
+        </div>
+        <div class="relative h-[260px] sm:h-[300px]">
+            <canvas id="evolution-chart"></canvas>
+        </div>
+    </div>
+
     <!-- Hint -->
     <p class="text-xs text-zinc-600 mb-3 font-medium flex items-center gap-1.5 animate-slideUp" style="animation-delay: 0.22s">
         <span>💡</span>
@@ -168,6 +181,7 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
     // ── Auth guard ──
     const token = localStorage.getItem('porra_token');
@@ -176,13 +190,98 @@
 
     let currentTab = 'general';
     let jornadasData = [];
+    let insigniasData = {};
 
     // ── Init ──
     document.addEventListener('DOMContentLoaded', async () => {
         await loadJornadas();
+        await loadInsignias();
         await loadRankingGeneral();
         await loadPersonalStats();
+        loadEvolutionChart();
     });
+
+    // ── Load Insignias (rachas y plenos) ──
+    async function loadInsignias() {
+        try {
+            const res = await apiFetch('/api/insignias');
+            const data = await res.json();
+            insigniasData = data.insignias || {};
+        } catch (err) {
+            console.error('Error loading insignias:', err);
+        }
+    }
+
+    // ── Evolution Chart ──
+    async function loadEvolutionChart() {
+        try {
+            const res = await apiFetch('/api/ranking/evolucion');
+            const data = await res.json();
+            const labels = data.labels || [];
+            const series = data.series || [];
+
+            // Solo mostrar con al menos 2 días de datos
+            if (labels.length < 2 || !series.length) return;
+
+            document.getElementById('evolution-card').classList.remove('hidden');
+
+            const datasets = series.map(s => ({
+                label: s.username,
+                data: s.data,
+                borderColor: getUserColor(s.username),
+                backgroundColor: getUserColor(s.username),
+                tension: 0.35,
+                borderWidth: 2.5,
+                pointRadius: 2.5,
+                pointHoverRadius: 5,
+            }));
+
+            new Chart(document.getElementById('evolution-chart'), {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#a1a1aa',
+                                boxWidth: 10,
+                                boxHeight: 10,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                font: { size: 11, weight: '600' },
+                                padding: 14,
+                            },
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 10, 17, 0.95)',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            titleColor: '#fff',
+                            bodyColor: '#d4d4d8',
+                            padding: 10,
+                            itemSort: (a, b) => b.parsed.y - a.parsed.y,
+                        },
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.04)' },
+                            ticks: { color: '#71717a', font: { size: 10 } },
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.04)' },
+                            ticks: { color: '#71717a', font: { size: 10 } },
+                        },
+                    },
+                },
+            });
+        } catch (err) {
+            console.error('Error loading evolution chart:', err);
+        }
+    }
 
     // ── Tab switch ──
     function switchRankingTab(tab) {
@@ -291,6 +390,19 @@
                 ? `<span class="chip chip-gold !text-[9px] flex-shrink-0">🃏 x${r.multiplicador_comodin.toFixed(1)}</span>`
                 : '';
 
+            // Insignias: racha, plenos, farolillo rojo
+            const ins = insigniasData[r.usuario_id] || {};
+            let badges = '';
+            if (ins.racha_actual >= 2) {
+                badges += `<span class="chip chip-live !text-[9px] flex-shrink-0" title="${ins.racha_actual} aciertos seguidos">🔥 x${ins.racha_actual}</span>`;
+            }
+            if (ins.plenos && ins.plenos.length > 0) {
+                badges += `<span class="chip chip-pending !text-[9px] flex-shrink-0" title="Pleno en fase(s): ${ins.plenos.join(', ')}">🎯 Pleno${ins.plenos.length > 1 ? ' x' + ins.plenos.length : ''}</span>`;
+            }
+            if (currentTab === 'general' && ranking.length >= 4 && i === ranking.length - 1) {
+                badges += `<span class="chip chip-done !text-[9px] flex-shrink-0" title="Farolillo rojo">💀</span>`;
+            }
+
             row.innerHTML = `
                 <div class="col-span-1 flex justify-center">
                     ${medal ? `<span class="text-lg">${medal}</span>` : `<span class="rank-badge">${r.posicion}</span>`}
@@ -301,6 +413,7 @@
                     </div>
                     <span class="font-bold text-sm ${i < 3 ? 'text-white' : 'text-zinc-300'} truncate">${r.username}</span>
                     ${multBadge}
+                    ${badges}
                 </div>
                 <div class="col-span-2 text-center hidden sm:block">
                     <span class="text-xs font-semibold text-zinc-500">${r.num_pronosticos}</span>

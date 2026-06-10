@@ -13,6 +13,8 @@ from app.services.scoring_service import (
     get_ranking_general,
     get_ranking_jornada,
     get_jornadas_disponibles,
+    get_ranking_evolucion,
+    get_insignias,
 )
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
@@ -85,6 +87,20 @@ def ranking_jornada(jornada: int):
     """Ranking de una jornada específica."""
     ranking = get_ranking_jornada(jornada)
     return jsonify({"ranking": ranking, "jornada": jornada}), 200
+
+
+@api_bp.route("/ranking/evolucion", methods=["GET"])
+@jwt_required()
+def ranking_evolucion():
+    """Evolución acumulada de puntos por usuario (para la gráfica del dashboard)."""
+    return jsonify(get_ranking_evolucion()), 200
+
+
+@api_bp.route("/insignias", methods=["GET"])
+@jwt_required()
+def insignias():
+    """Insignias por usuario: rachas de aciertos y plenos de fase."""
+    return jsonify({"insignias": get_insignias()}), 200
 
 
 @api_bp.route("/mis-estadisticas", methods=["GET"])

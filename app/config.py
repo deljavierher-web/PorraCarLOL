@@ -47,3 +47,7 @@ class Config:
     # Configuración de Comodín Dinámico
     COMODIN_MIN_MULTIPLIER = float(os.environ.get("COMODIN_MIN_MULTIPLIER", "2.0"))
     COMODIN_MAX_MULTIPLIER = float(os.environ.get("COMODIN_MAX_MULTIPLIER", "5.0"))
+
+    # Telegram (recordatorio de cierre de pronósticos)
+    TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+    TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")

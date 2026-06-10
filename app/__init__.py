@@ -70,6 +70,11 @@ def create_app() -> Flask:
     def admin_panel():
         return render_template("admin.html")
 
+    @app.route("/sw.js")
+    def service_worker():
+        # Servido desde la raíz para que el scope del SW cubra toda la app
+        return send_from_directory("../static", "sw.js", mimetype="application/javascript")
+
     # ── Crear tablas y usuario admin por defecto ──
     with app.app_context():
         from app.models import Usuario, Partido, Prediccion  # noqa: F401
@@ -173,6 +178,28 @@ def _setup_scheduler(app: Flask) -> None:
         replace_existing=True,
     )
     logger.info("📅 Job programado: keyless_worldcup_sync cada 10 minutos.")
+
+    # Recordatorio de Telegram (cierre de pronósticos) cada hora
+    if app.config.get("TELEGRAM_BOT_TOKEN") and app.config.get("TELEGRAM_CHAT_ID"):
+        from app.services.notify_service import check_and_send_deadline_reminders
+
+        def telegram_reminder_job():
+            with app.app_context():
+                try:
+                    check_and_send_deadline_reminders()
+                except Exception as e:
+                    logger.error(f"Error en telegram_reminder_job: {e}")
+
+        scheduler.add_job(
+            telegram_reminder_job,
+            "interval",
+            hours=1,
+            id="telegram_reminder",
+            replace_existing=True,
+        )
+        logger.info("📅 Job programado: telegram_reminder cada hora.")
+    else:
+        logger.info("📵 Recordatorio de Telegram desactivado (configura TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID en .env).")
 
     if app.config.get("ODDS_API_KEY"):
         scheduler.add_job(
