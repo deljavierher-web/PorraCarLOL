@@ -2,53 +2,53 @@
 {% block title %}Iniciar Sesión{% endblock %}
 
 {% block body %}
-<!-- Background gradient -->
-<div class="min-h-screen flex items-center justify-center relative overflow-hidden">
-    <!-- Animated background blobs -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-40 -left-40 w-80 h-80 bg-brand-500/10 rounded-full blur-3xl"></div>
-        <div class="absolute top-1/2 -right-40 w-96 h-96 bg-brand-600/8 rounded-full blur-3xl"></div>
-        <div class="absolute -bottom-20 left-1/3 w-72 h-72 bg-brand-400/5 rounded-full blur-3xl"></div>
-    </div>
+<div class="min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-10">
 
-    <!-- Login Card -->
-    <div class="glass-strong rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8 animate-slideUp relative z-10">
-        <!-- Logo / Title -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 mb-4 shadow-lg">
-                <span class="text-3xl">⚽</span>
+    <div class="w-full max-w-sm relative z-10">
+
+        <!-- Marca -->
+        <div class="text-center mb-8 animate-slideUp">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-volt-400 to-aqua-400 mb-5 shadow-glow rotate-3 hover:rotate-0 transition-transform duration-300">
+                <span class="text-3xl -rotate-3">⚽</span>
             </div>
-            <h1 class="text-3xl font-extrabold gradient-text">PorraCarLOL</h1>
-            <p class="text-gray-400 text-sm mt-2">Porra del Mundial 2026 🌍🏆</p>
+            <p class="eyebrow mb-1.5">Mundial 2026</p>
+            <h1 class="font-display text-4xl font-bold tracking-tight text-white">
+                Porra<span class="gradient-text">CarLOL</span>
+            </h1>
+            <p class="text-zinc-500 text-sm mt-2">La porra del Mundial entre amigos</p>
         </div>
 
-        <!-- Login Form -->
-        <form id="login-form" class="space-y-4" onsubmit="handleLogin(event)">
-            <div>
-                <label for="login-username" class="block text-sm font-medium text-gray-300 mb-1.5">
-                    Usuario
-                </label>
-                <input type="text" id="login-username" name="username" required autocomplete="username"
-                    class="w-full px-4 py-3 bg-surface-800 border border-surface-500 rounded-xl text-white placeholder-gray-500 focus:border-brand-500 transition-colors"
-                    placeholder="Tu nombre de usuario">
-            </div>
-            <div>
-                <label for="login-password" class="block text-sm font-medium text-gray-300 mb-1.5">
-                    Contraseña
-                </label>
-                <input type="password" id="login-password" name="password" required autocomplete="current-password"
-                    class="w-full px-4 py-3 bg-surface-800 border border-surface-500 rounded-xl text-white placeholder-gray-500 focus:border-brand-500 transition-colors"
-                    placeholder="••••••••">
-            </div>
-            <button type="submit" id="login-submit"
-                class="w-full py-3.5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-brand-500/25">
-                Entrar
-            </button>
-        </form>
+        <!-- Card Login -->
+        <div class="card p-6 sm:p-7 animate-slideUp" style="animation-delay: 0.08s">
+            <form id="login-form" class="space-y-4" onsubmit="handleLogin(event)">
+                <div>
+                    <label for="login-username" class="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">
+                        Usuario
+                    </label>
+                    <input type="text" id="login-username" name="username" required autocomplete="username"
+                        class="w-full px-4 py-3 bg-ink-800 border border-white/8 rounded-xl text-white text-sm placeholder-zinc-600 transition-all"
+                        style="border: 1px solid rgba(255,255,255,0.08);"
+                        placeholder="Tu nombre de usuario">
+                </div>
+                <div>
+                    <label for="login-password" class="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">
+                        Contraseña
+                    </label>
+                    <input type="password" id="login-password" name="password" required autocomplete="current-password"
+                        class="w-full px-4 py-3 bg-ink-800 border border-white/8 rounded-xl text-white text-sm placeholder-zinc-600 transition-all"
+                        style="border: 1px solid rgba(255,255,255,0.08);"
+                        placeholder="••••••••">
+                </div>
+                <button type="submit" id="login-submit"
+                    class="btn-primary w-full py-3.5 rounded-xl text-sm mt-2">
+                    Entrar a la porra →
+                </button>
+            </form>
+        </div>
 
         <!-- Footer -->
-        <p class="text-center text-gray-500 text-xs mt-6">
-            Porra del Mundial 2026 entre amigos · Sin dinero real · ¡Pura diversión! ⚽🎉
+        <p class="text-center text-zinc-600 text-xs mt-6 animate-slideUp" style="animation-delay: 0.15s">
+            Sin dinero real · Pura diversión entre amigos 🎉
         </p>
     </div>
 </div>
@@ -88,7 +88,7 @@
             showToast('error', 'Error de conexión.');
         } finally {
             btn.disabled = false;
-            btn.textContent = 'Entrar';
+            btn.textContent = 'Entrar a la porra →';
         }
     }
 </script>

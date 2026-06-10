@@ -2,14 +2,15 @@
 <html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="PorraCarLOL — Pronosticador de Torneo entre amigos. Compite prediciendo resultados de fútbol.">
-    <title>{% block title %}PorraCarLOL{% endblock %} — Porra del Torneo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#060609">
+    <meta name="description" content="PorraCarLOL — Porra del Mundial 2026 entre amigos. Compite prediciendo resultados.">
+    <title>{% block title %}PorraCarLOL{% endblock %} · PorraCarLOL</title>
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Space Grotesk (display) + Inter (body) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
     <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,31 +21,52 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
+                        display: ['Space Grotesk', 'Inter', 'sans-serif'],
                     },
                     colors: {
+                        ink: {
+                            950: '#060609',
+                            900: '#0a0a11',
+                            800: '#10101a',
+                            700: '#171724',
+                            600: '#1f1f30',
+                            500: '#2a2a40',
+                            400: '#3a3a55',
+                        },
+                        volt: {
+                            300: '#bef264',
+                            400: '#a3e635',
+                            500: '#84cc16',
+                            600: '#65a30d',
+                        },
+                        aqua: {
+                            300: '#67e8f9',
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                        },
+                        /* Aliases de compatibilidad (paleta antigua → nueva) */
                         brand: {
-                            50: '#eefbf4',
-                            100: '#d6f5e3',
-                            200: '#b0eacb',
-                            300: '#7cdaad',
-                            400: '#45c289',
-                            500: '#22a86e',
-                            600: '#158858',
-                            700: '#116d49',
-                            800: '#10563b',
-                            900: '#0e4732',
-                            950: '#06281c',
+                            300: '#bef264',
+                            400: '#a3e635',
+                            500: '#84cc16',
+                            600: '#65a30d',
+                            700: '#4d7c0f',
                         },
                         surface: {
-                            900: '#0b0f19',
-                            800: '#0f1629',
-                            700: '#141c33',
-                            600: '#1a2542',
-                            500: '#243056',
+                            500: '#2a2a40',
+                            600: '#1f1f30',
+                            700: '#171724',
+                            800: '#10101a',
+                            900: '#060609',
                         },
                         gold: '#fbbf24',
                         silver: '#9ca3af',
                         bronze: '#d97706',
+                    },
+                    boxShadow: {
+                        glow: '0 0 24px rgba(163, 230, 53, 0.22)',
+                        'glow-aqua': '0 0 24px rgba(34, 211, 238, 0.22)',
+                        'glow-gold': '0 0 24px rgba(251, 191, 36, 0.28)',
                     },
                 },
             },
@@ -54,7 +76,15 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/static/css/styles.css">
 </head>
-<body class="bg-surface-900 text-gray-100 font-sans min-h-screen antialiased">
+<body class="bg-ink-950 text-zinc-100 font-sans min-h-screen antialiased">
+
+    <!-- Decorative background -->
+    <div class="bg-fx" aria-hidden="true">
+        <div class="bg-blob bg-blob-1"></div>
+        <div class="bg-blob bg-blob-2"></div>
+        <div class="bg-blob bg-blob-3"></div>
+        <div class="bg-grid"></div>
+    </div>
 
     <!-- Toast Container -->
     <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2"></div>

@@ -76,6 +76,7 @@ def create_app() -> Flask:
 
         db.create_all()
         _create_default_admin(app)
+        _create_default_spectator(app)
         _seed_initial_matches(app)
 
     # ── Iniciar Scheduler ──
@@ -101,6 +102,21 @@ def _create_default_admin(app: Flask) -> None:
         db.session.add(admin)
         db.session.commit()
         logger.info(f"Usuario admin '{admin_username}' creado.")
+
+
+def _create_default_spectator(app: Flask) -> None:
+    """Crea el usuario espectador/invitado de solo lectura si no existe."""
+    from app.models.usuario import Usuario
+
+    guest_username = "invitado"
+    guest_password = "Invitado2026!"
+
+    if not Usuario.query.filter_by(username=guest_username).first():
+        guest = Usuario(username=guest_username, es_administrador=False)
+        guest.set_password(guest_password)
+        db.session.add(guest)
+        db.session.commit()
+        logger.info(f"Usuario invitado de solo lectura '{guest_username}' creado.")
 
 
 def _seed_initial_matches(app: Flask) -> None:

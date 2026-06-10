@@ -1,168 +1,133 @@
 {% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}Rankings{% endblock %}
 
 {% block body %}
-<!-- Navbar -->
-<nav class="glass-strong sticky top-0 z-50 border-b border-white/5">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
-        <div class="flex items-center justify-between h-16">
-            <!-- Logo -->
-            <a href="/dashboard" class="flex items-center gap-2">
-                <span class="text-2xl">⚽</span>
-                <span class="text-lg font-extrabold gradient-text hidden sm:inline">PorraCarLOL</span>
-            </a>
-
-            <!-- Nav Links -->
-            <div class="flex items-center gap-1 sm:gap-2">
-                <a href="/dashboard"
-                    class="px-3 py-2 rounded-lg text-sm font-medium text-brand-400 bg-brand-500/10 transition-colors">
-                    📊 Rankings
-                </a>
-                <a href="/pronosticos"
-                    class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
-                    🎯 Pronósticos
-                </a>
-                <a href="/cuadro"
-                    class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
-                    🏆 Cuadro
-                </a>
-                <a href="/admin" id="nav-admin-link"
-                    class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors hidden">
-                    ⚙️ Admin
-                </a>
-            </div>
-
-            <!-- User Menu -->
-            <div class="flex items-center gap-3">
-                <span id="nav-username" class="text-sm text-gray-400 hidden sm:inline"></span>
-                <button onclick="handleLogout()"
-                    class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors">
-                    Salir
-                </button>
-            </div>
-        </div>
-    </div>
-</nav>
+{% set active = 'rankings' %}
+{% include '_nav.html' %}
 
 <!-- Main Content -->
-<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 pb-28 sm:pb-14">
+
     <!-- Header -->
     <div class="mb-8 animate-slideUp">
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-white mb-2">
-            Clasificación <span class="gradient-text">del Mundial 2026</span>
+        <p class="eyebrow mb-2">Mundial 2026 · Porra</p>
+        <h1 class="font-display text-3xl sm:text-5xl font-bold tracking-tight text-white">
+            Clasificación <span class="gradient-text">general</span>
         </h1>
-        <p class="text-gray-400">¡Mira quién lidera la porra! Sistema de puntos estilo B365: cuota × 10 = puntos.</p>
+        <p class="text-zinc-500 text-sm mt-3">Sistema de puntos estilo casa de apuestas: cuota × 10 = puntos. ¿Quién manda en la porra?</p>
     </div>
 
     <!-- Personal Stats Cards -->
-    <div id="stats-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 hidden animate-slideUp" style="animation-delay: 0.05s">
-        <!-- Puntos Totales Card -->
-        <div class="glass p-4 rounded-2xl flex flex-col justify-between min-h-[90px] border border-white/5 bg-white/[0.01]">
-            <span class="text-xs text-gray-400 font-medium">✨ Puntos Totales</span>
-            <div class="flex items-baseline gap-1 mt-1">
-                <span id="stat-points" class="text-2xl font-black text-brand-400">0.0</span>
-                <span class="text-xs text-gray-500 font-semibold">pts</span>
+    <div id="stats-container" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10 hidden animate-slideUp" style="animation-delay: 0.05s">
+        <!-- Puntos Totales -->
+        <div class="card p-4 sm:p-5">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="w-7 h-7 rounded-lg bg-volt-400/10 border border-volt-400/20 flex items-center justify-center text-sm">✨</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Puntos</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+                <span id="stat-points" class="font-display text-3xl font-bold gradient-text">0.0</span>
+                <span class="text-xs text-zinc-600 font-bold">pts</span>
             </div>
         </div>
-        <!-- Posición Card -->
-        <div class="glass p-4 rounded-2xl flex flex-col justify-between min-h-[90px] border border-white/5 bg-white/[0.01]">
-            <span class="text-xs text-gray-400 font-medium">🏆 Posición Ranking</span>
-            <div class="flex items-baseline justify-between gap-1 mt-1">
-                <div>
-                    <span id="stat-rank" class="text-2xl font-black text-white">—</span>
-                    <span class="text-xs text-gray-500 font-semibold">º lugar</span>
+        <!-- Posición -->
+        <div class="card p-4 sm:p-5">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="w-7 h-7 rounded-lg bg-aqua-400/10 border border-aqua-400/20 flex items-center justify-center text-sm">🏆</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Posición</span>
+            </div>
+            <div class="flex items-baseline justify-between gap-2">
+                <div class="flex items-baseline gap-1">
+                    <span id="stat-rank" class="font-display text-3xl font-bold text-white">—</span>
+                    <span class="text-xs text-zinc-600 font-bold">º</span>
                 </div>
                 <div class="text-right">
-                    <span id="stat-multiplier" class="text-sm font-bold text-yellow-400">🃏 x2.0</span>
-                    <div class="text-[8px] text-gray-500 font-medium font-mono">Poder Comodín</div>
+                    <span id="stat-multiplier" class="text-xs font-black text-gold">🃏 x2.0</span>
+                    <div class="text-[8px] text-zinc-600 font-bold uppercase tracking-wider">Comodín</div>
                 </div>
             </div>
         </div>
-        <!-- % de Acierto Card -->
-        <div class="glass p-4 rounded-2xl flex flex-col justify-between min-h-[90px] border border-white/5 bg-white/[0.01]">
-            <span class="text-xs text-gray-400 font-medium">🎯 Tasa de Acierto</span>
-            <div class="flex items-baseline gap-1 mt-1">
-                <span id="stat-accuracy" class="text-2xl font-black text-white">0%</span>
-                <span id="stat-hits-count" class="text-[10px] text-gray-500 font-medium ml-1">(0/0)</span>
+        <!-- % Acierto -->
+        <div class="card p-4 sm:p-5">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="w-7 h-7 rounded-lg bg-volt-400/10 border border-volt-400/20 flex items-center justify-center text-sm">🎯</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Acierto</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+                <span id="stat-accuracy" class="font-display text-3xl font-bold text-white">0%</span>
+                <span id="stat-hits-count" class="text-[10px] text-zinc-600 font-bold">(0/0)</span>
             </div>
         </div>
-        <!-- Mejor Apuesta Card -->
-        <div class="glass p-4 rounded-2xl flex flex-col justify-between min-h-[90px] border border-white/5 bg-white/[0.01]">
-            <span class="text-xs text-gray-400 font-medium">🔥 Mejor Apuesta</span>
-            <div class="mt-1 min-w-0">
+        <!-- Mejor Apuesta -->
+        <div class="card p-4 sm:p-5">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="w-7 h-7 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center text-sm">🔥</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Mejor apuesta</span>
+            </div>
+            <div class="min-w-0">
                 <span id="stat-best-bet" class="text-sm font-bold text-white block truncate">Ninguna</span>
-                <span id="stat-best-bet-pts" class="text-xs text-brand-400 font-semibold font-mono text-[11px]">0 pts</span>
+                <span id="stat-best-bet-pts" class="text-xs text-volt-400 font-bold font-display">0 pts</span>
             </div>
         </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="flex gap-4 mb-6 border-b border-surface-600 pb-0">
-        <button id="tab-general" onclick="switchRankingTab('general')"
-            class="tab-btn active pb-3 text-sm font-semibold text-brand-400">
-            🏅 Ranking General
-        </button>
-        <button id="tab-jornada" onclick="switchRankingTab('jornada')"
-            class="tab-btn pb-3 text-sm font-semibold text-gray-500 hover:text-gray-300">
-            📅 Por Fase
-        </button>
-    </div>
+    <!-- Tabs + Selector -->
+    <div class="flex flex-wrap items-center gap-3 mb-7 animate-slideUp" style="animation-delay: 0.1s">
+        <div class="seg">
+            <button id="tab-general" onclick="switchRankingTab('general')" class="seg-btn seg-active">
+                🏅 General
+            </button>
+            <button id="tab-jornada" onclick="switchRankingTab('jornada')" class="seg-btn">
+                📅 Por fase
+            </button>
+        </div>
 
-    <!-- Jornada Selector (hidden by default) -->
-    <div id="jornada-selector" class="mb-6 hidden animate-slideDown">
-        <div class="flex items-center gap-3">
-            <label class="text-sm text-gray-400 font-medium">Fase:</label>
+        <!-- Jornada Selector (hidden by default) -->
+        <div id="jornada-selector" class="hidden animate-slideDown">
             <select id="jornada-select" onchange="loadRankingJornada()"
-                class="bg-surface-700 border border-surface-500 text-white px-4 py-2 rounded-xl text-sm focus:border-brand-500">
+                class="bg-ink-800 border border-white/10 text-white px-4 py-2.5 rounded-xl text-sm font-semibold">
             </select>
         </div>
     </div>
 
     <!-- Top 3 Podium -->
-    <div id="podium" class="grid grid-cols-3 gap-3 sm:gap-4 mb-8 hidden">
+    <div id="podium" class="grid grid-cols-3 gap-2.5 sm:gap-4 mb-8 hidden">
         <!-- 2nd place -->
-        <div id="podium-2" class="flex flex-col items-center animate-slideUp" style="animation-delay: 0.1s">
-            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-xl sm:text-2xl font-bold text-white mb-2 shadow-lg mt-6">
-                -
-            </div>
-            <span class="text-2xl mb-1">🥈</span>
-            <span id="podium-2-name" class="text-xs sm:text-sm font-semibold text-gray-300 text-center truncate max-w-full">—</span>
-            <span id="podium-2-pts" class="text-xs text-gray-500">0 pts</span>
+        <div id="podium-2" class="podium-card p-second card p-4 sm:p-5 flex flex-col items-center text-center cursor-pointer animate-slideUp sm:mt-5" style="animation-delay: 0.1s">
+            <div class="podium-avatar bg-gradient-to-br from-zinc-400 to-zinc-600 text-white mb-3">-</div>
+            <span class="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">🥈 2º</span>
+            <span id="podium-2-name" class="text-xs sm:text-sm font-bold text-zinc-200 truncate max-w-full">—</span>
+            <span id="podium-2-pts" class="font-display text-sm font-bold text-zinc-500 mt-0.5">0 pts</span>
         </div>
         <!-- 1st place -->
-        <div id="podium-1" class="flex flex-col items-center animate-slideUp">
-            <div class="w-18 h-18 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-2xl sm:text-3xl font-bold text-white mb-2 shadow-lg shadow-yellow-500/30"
-                style="width: 4.5rem; height: 4.5rem;">
-                -
-            </div>
-            <span class="text-3xl mb-1">🥇</span>
-            <span id="podium-1-name" class="text-sm sm:text-base font-bold text-white text-center truncate max-w-full">—</span>
-            <span id="podium-1-pts" class="text-sm text-yellow-400 font-semibold">0 pts</span>
+        <div id="podium-1" class="podium-card p-first card p-4 sm:p-6 flex flex-col items-center text-center cursor-pointer animate-slideUp">
+            <div class="podium-avatar bg-gradient-to-br from-yellow-300 to-amber-500 text-ink-950 mb-3 shadow-glow-gold" style="width: 62px; height: 62px; font-size: 1.5rem;">-</div>
+            <span class="text-[10px] font-black uppercase tracking-widest text-gold mb-1">👑 Líder</span>
+            <span id="podium-1-name" class="text-sm sm:text-base font-bold text-white truncate max-w-full">—</span>
+            <span id="podium-1-pts" class="font-display text-base font-bold text-gold mt-0.5">0 pts</span>
         </div>
         <!-- 3rd place -->
-        <div id="podium-3" class="flex flex-col items-center animate-slideUp" style="animation-delay: 0.2s">
-            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center text-xl sm:text-2xl font-bold text-white mb-2 shadow-lg mt-6">
-                -
-            </div>
-            <span class="text-2xl mb-1">🥉</span>
-            <span id="podium-3-name" class="text-xs sm:text-sm font-semibold text-gray-300 text-center truncate max-w-full">—</span>
-            <span id="podium-3-pts" class="text-xs text-gray-500">0 pts</span>
+        <div id="podium-3" class="podium-card p-third card p-4 sm:p-5 flex flex-col items-center text-center cursor-pointer animate-slideUp sm:mt-5" style="animation-delay: 0.2s">
+            <div class="podium-avatar bg-gradient-to-br from-amber-600 to-amber-800 text-white mb-3">-</div>
+            <span class="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1">🥉 3º</span>
+            <span id="podium-3-name" class="text-xs sm:text-sm font-bold text-zinc-200 truncate max-w-full">—</span>
+            <span id="podium-3-pts" class="font-display text-sm font-bold text-zinc-500 mt-0.5">0 pts</span>
         </div>
     </div>
 
     <!-- Hint -->
-    <p class="text-xs text-brand-400/80 mb-3 font-medium flex items-center gap-1.5 animate-slideUp" style="animation-delay: 0.22s">
+    <p class="text-xs text-zinc-600 mb-3 font-medium flex items-center gap-1.5 animate-slideUp" style="animation-delay: 0.22s">
         <span>💡</span>
-        <span>Haz clic en cualquier jugador para ver sus pronósticos de la fase seleccionada.</span>
+        <span>Toca cualquier jugador para ver sus pronósticos de la fase seleccionada.</span>
     </p>
 
     <!-- Ranking Table -->
-    <div class="glass rounded-2xl overflow-hidden">
+    <div class="card overflow-hidden animate-slideUp" style="animation-delay: 0.25s">
         <!-- Table Header -->
-        <div class="grid grid-cols-12 gap-2 px-4 sm:px-6 py-3 border-b border-white/5 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <div class="grid grid-cols-12 gap-2 px-4 sm:px-6 py-3.5 border-b border-white/5 text-[10px] font-black text-zinc-600 uppercase tracking-widest">
             <div class="col-span-1 text-center">#</div>
             <div class="col-span-6 sm:col-span-5">Jugador</div>
-            <div class="col-span-2 text-center hidden sm:block">Pronósticos</div>
+            <div class="col-span-2 text-center hidden sm:block">Pron.</div>
             <div class="col-span-5 sm:col-span-4 text-right">Puntos</div>
         </div>
 
@@ -177,44 +142,37 @@
         <!-- Empty State -->
         <div id="ranking-empty" class="hidden py-16 text-center">
             <span class="text-4xl block mb-3">🏟️</span>
-            <p class="text-gray-400 text-sm">Aún no hay datos de clasificación.</p>
-            <p class="text-gray-500 text-xs mt-1">¡Haz tus pronósticos para aparecer aquí!</p>
+            <p class="text-zinc-400 text-sm font-semibold">Aún no hay datos de clasificación.</p>
+            <p class="text-zinc-600 text-xs mt-1">¡Haz tus pronósticos para aparecer aquí!</p>
         </div>
     </div>
 </main>
 
 <!-- User Predictions Modal -->
-<div id="user-predictions-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
-    <div class="glass-strong rounded-2xl p-6 w-full max-w-lg mx-4 animate-bounceIn max-h-[85vh] flex flex-col">
+<div id="user-predictions-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="glass-strong rounded-2xl p-6 w-full max-w-lg animate-bounceIn max-h-[85vh] flex flex-col">
         <div class="flex items-center justify-between mb-2">
             <div>
-                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <h3 class="font-display text-lg font-bold text-white flex items-center gap-2">
                     <span>🎯 Pronósticos de</span>
                     <span id="modal-user-name" class="gradient-text"></span>
                 </h3>
-                <p id="modal-user-phase" class="text-xs text-gray-400 mt-0.5"></p>
+                <p id="modal-user-phase" class="text-xs text-zinc-500 mt-0.5"></p>
             </div>
-            <button onclick="closeUserPredictionsModal()" class="text-gray-500 hover:text-white transition-colors text-2xl">&times;</button>
+            <button onclick="closeUserPredictionsModal()" class="text-zinc-500 hover:text-white transition-colors text-2xl leading-none">&times;</button>
         </div>
-        
+
         <div class="overflow-y-auto flex-1 mt-4 space-y-2 pr-1" id="modal-predictions-list">
             <!-- Predictions load here -->
         </div>
     </div>
 </div>
-</main>
 
 <script>
     // ── Auth guard ──
     const token = localStorage.getItem('porra_token');
     const user = JSON.parse(localStorage.getItem('porra_user') || '{}');
     if (!token) window.location.href = '/';
-
-    // Show admin link if admin
-    if (user.es_administrador) {
-        document.getElementById('nav-admin-link').classList.remove('hidden');
-    }
-    document.getElementById('nav-username').textContent = user.username || '';
 
     let currentTab = 'general';
     let jornadasData = [];
@@ -234,17 +192,13 @@
         const selector = document.getElementById('jornada-selector');
 
         if (tab === 'general') {
-            tabGeneral.classList.add('active', 'text-brand-400');
-            tabGeneral.classList.remove('text-gray-500');
-            tabJornada.classList.remove('active', 'text-brand-400');
-            tabJornada.classList.add('text-gray-500');
+            tabGeneral.classList.add('seg-active');
+            tabJornada.classList.remove('seg-active');
             selector.classList.add('hidden');
             loadRankingGeneral();
         } else {
-            tabJornada.classList.add('active', 'text-brand-400');
-            tabJornada.classList.remove('text-gray-500');
-            tabGeneral.classList.remove('active', 'text-brand-400');
-            tabGeneral.classList.add('text-gray-500');
+            tabJornada.classList.add('seg-active');
+            tabGeneral.classList.remove('seg-active');
             selector.classList.remove('hidden');
             loadRankingJornada();
         }
@@ -318,38 +272,47 @@
             updatePodium(3, ranking[2] || null);
         }
 
+        // Max points for relative bar
+        const maxPts = Math.max(ranking[0].puntos_totales, 0.001);
+
         // Render table rows
         body.innerHTML = '';
         ranking.forEach((r, i) => {
             const topClass = i === 0 ? 'top-1' : i === 1 ? 'top-2' : i === 2 ? 'top-3' : '';
             const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
             const colors = getAvatarColor(r.username);
+            const barPct = Math.max((r.puntos_totales / maxPts) * 100, 2);
 
             const row = document.createElement('div');
-            row.className = `ranking-row grid grid-cols-12 gap-2 items-center px-4 sm:px-6 py-3.5 cursor-pointer hover:bg-white/[0.02] transition-colors ${topClass}`;
+            row.className = `ranking-row grid grid-cols-12 gap-2 items-center px-4 sm:px-6 py-3.5 cursor-pointer ${topClass}`;
             row.onclick = () => showUserPredictionsModal(r.usuario_id, r.username);
 
-            const multBadge = r.multiplicador_comodin 
-                ? `<span class="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-[10px] px-1.5 py-0.5 rounded font-black ml-1.5 flex-shrink-0">🃏 x${r.multiplicador_comodin.toFixed(1)}</span>` 
+            const multBadge = r.multiplicador_comodin
+                ? `<span class="chip chip-gold !text-[9px] flex-shrink-0">🃏 x${r.multiplicador_comodin.toFixed(1)}</span>`
                 : '';
 
             row.innerHTML = `
-                <div class="col-span-1 text-center">
-                    <span class="text-sm font-bold ${i < 3 ? 'text-white' : 'text-gray-500'}">${medal || r.posicion}</span>
+                <div class="col-span-1 flex justify-center">
+                    ${medal ? `<span class="text-lg">${medal}</span>` : `<span class="rank-badge">${r.posicion}</span>`}
                 </div>
                 <div class="col-span-6 sm:col-span-5 flex items-center gap-3 min-w-0">
                     <div class="avatar flex-shrink-0" style="background: ${colors.bg}; color: ${colors.text};">
                         ${r.username.charAt(0)}
                     </div>
-                    <span class="font-semibold text-sm ${i < 3 ? 'text-white' : 'text-gray-300'} truncate">${r.username}</span>
+                    <span class="font-bold text-sm ${i < 3 ? 'text-white' : 'text-zinc-300'} truncate">${r.username}</span>
                     ${multBadge}
                 </div>
                 <div class="col-span-2 text-center hidden sm:block">
-                    <span class="text-xs text-gray-500">${r.num_pronosticos}</span>
+                    <span class="text-xs font-semibold text-zinc-500">${r.num_pronosticos}</span>
                 </div>
                 <div class="col-span-5 sm:col-span-4 text-right">
-                    <span class="text-lg font-bold ${i < 3 ? 'text-brand-400' : 'text-gray-300'}">${r.puntos_totales.toFixed(1)}</span>
-                    <span class="text-xs text-gray-500 ml-1">pts</span>
+                    <span class="font-display text-lg font-bold ${i < 3 ? 'gradient-text' : 'text-zinc-300'}">${r.puntos_totales.toFixed(1)}</span>
+                    <span class="text-[10px] text-zinc-600 font-bold ml-1">pts</span>
+                    <div class="flex justify-end mt-1.5">
+                        <div class="w-full max-w-[110px] h-[3px] bg-white/5 rounded-full overflow-hidden">
+                            <div class="points-bar" style="width: ${barPct}%"></div>
+                        </div>
+                    </div>
                 </div>
             `;
             body.appendChild(row);
@@ -360,11 +323,13 @@
         const name = document.getElementById(`podium-${pos}-name`);
         const pts = document.getElementById(`podium-${pos}-pts`);
         const container = document.getElementById(`podium-${pos}`);
+        const avatar = container.querySelector('.podium-avatar');
 
         if (!data) {
             name.textContent = '—';
             pts.textContent = '0 pts';
-            container.style.opacity = '0.3';
+            if (avatar) avatar.textContent = '-';
+            container.style.opacity = '0.35';
             container.style.cursor = 'default';
             container.onclick = null;
             return;
@@ -375,22 +340,19 @@
         container.onclick = () => showUserPredictionsModal(data.usuario_id, data.username);
         name.textContent = data.username;
         pts.textContent = `${data.puntos_totales.toFixed(1)} pts`;
-
-        // Update avatar letter
-        const avatar = container.querySelector('div:first-child');
         if (avatar) avatar.textContent = data.username.charAt(0).toUpperCase();
     }
 
     function getAvatarColor(name) {
         const colors = [
-            { bg: 'linear-gradient(135deg, #22a86e, #158858)', text: '#fff' },
-            { bg: 'linear-gradient(135deg, #3b82f6, #2563eb)', text: '#fff' },
-            { bg: 'linear-gradient(135deg, #f59e0b, #d97706)', text: '#fff' },
-            { bg: 'linear-gradient(135deg, #ef4444, #dc2626)', text: '#fff' },
-            { bg: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', text: '#fff' },
-            { bg: 'linear-gradient(135deg, #ec4899, #db2777)', text: '#fff' },
-            { bg: 'linear-gradient(135deg, #14b8a6, #0d9488)', text: '#fff' },
-            { bg: 'linear-gradient(135deg, #f97316, #ea580c)', text: '#fff' },
+            { bg: 'linear-gradient(135deg, #a3e635, #65a30d)', text: '#060609' },
+            { bg: 'linear-gradient(135deg, #22d3ee, #0891b2)', text: '#060609' },
+            { bg: 'linear-gradient(135deg, #fbbf24, #d97706)', text: '#060609' },
+            { bg: 'linear-gradient(135deg, #f87171, #dc2626)', text: '#fff' },
+            { bg: 'linear-gradient(135deg, #a78bfa, #7c3aed)', text: '#fff' },
+            { bg: 'linear-gradient(135deg, #f472b6, #db2777)', text: '#fff' },
+            { bg: 'linear-gradient(135deg, #2dd4bf, #0d9488)', text: '#060609' },
+            { bg: 'linear-gradient(135deg, #fb923c, #ea580c)', text: '#060609' },
         ];
         let hash = 0;
         for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
@@ -399,16 +361,16 @@
 
     async function loadPersonalStats() {
         if (user.es_administrador) return;
-        
+
         try {
             const res = await apiFetch('/api/mis-estadisticas');
             const data = await res.json();
-            
+
             if (res.ok) {
                 document.getElementById('stats-container').classList.remove('hidden');
-                
+
                 document.getElementById('stat-points').textContent = data.puntos_totales.toFixed(1);
-                
+
                 const rankEl = document.getElementById('stat-rank');
                 if (data.posicion !== null) {
                     const medals = { 1: '🥇 1', 2: '🥈 2', 3: '🥉 3' };
@@ -416,15 +378,15 @@
                 } else {
                     rankEl.textContent = '—';
                 }
-                
+
                 const multEl = document.getElementById('stat-multiplier');
                 if (multEl && data.multiplicador_comodin) {
                     multEl.textContent = `🃏 x${data.multiplicador_comodin.toFixed(1)}`;
                 }
-                
+
                 document.getElementById('stat-accuracy').textContent = `${data.tasa_acierto}%`;
                 document.getElementById('stat-hits-count').textContent = `(${data.aciertos}/${data.total_finalizados})`;
-                
+
                 const bestBetEl = document.getElementById('stat-best-bet');
                 const bestBetPtsEl = document.getElementById('stat-best-bet-pts');
                 if (data.mejor_apuesta) {
@@ -448,11 +410,11 @@
         const nameLabel = document.getElementById('modal-user-name');
         const phaseLabel = document.getElementById('modal-user-phase');
         const list = document.getElementById('modal-predictions-list');
-        
+
         const select = document.getElementById('jornada-select');
         const jornada = select.value;
         const phaseText = select.options[select.selectedIndex]?.text || `Fase ${jornada}`;
-        
+
         nameLabel.textContent = username;
         phaseLabel.textContent = `Viendo pronósticos para la ${phaseText}`;
         list.innerHTML = `
@@ -460,62 +422,62 @@
             <div class="shimmer h-12 rounded-xl"></div>
             <div class="shimmer h-12 rounded-xl"></div>
         `;
-        
+
         modal.classList.remove('hidden');
-        
+
         try {
             const res = await apiFetch(`/api/usuarios/${userId}/pronosticos?jornada=${jornada}`);
             const data = await res.json();
-            
+
             if (!res.ok) {
                 list.innerHTML = `<p class="text-sm text-red-400 text-center py-4">${data.error || 'Error al cargar los pronósticos.'}</p>`;
                 return;
             }
-            
+
             const pronosticos = data.pronosticos || [];
             if (!pronosticos.length) {
-                list.innerHTML = '<p class="text-sm text-gray-500 text-center py-6">Este jugador no ha realizado ningún pronóstico para esta fase.</p>';
+                list.innerHTML = '<p class="text-sm text-zinc-500 text-center py-6">Este jugador no ha realizado ningún pronóstico para esta fase.</p>';
                 return;
             }
-            
+
             list.innerHTML = pronosticos.map(p => {
                 const finished = p.partido.finalizado;
                 const started = p.partido.ha_comenzado;
-                
+
                 // Format prediction badge
                 let predBadge = '';
                 if (p.pronostico === '?') {
-                    predBadge = `<span class="text-xs bg-surface-600 text-gray-400 px-2.5 py-1 rounded-lg font-medium flex items-center gap-1">🔒 Oculto</span>`;
+                    predBadge = `<span class="text-xs bg-ink-600 text-zinc-400 px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1">🔒 Oculto</span>`;
                 } else if (p.pronostico) {
                     const label = p.pronostico;
-                    const activeColor = finished 
-                        ? (p.pronostico === p.partido.resultado_real ? 'bg-brand-600 border border-brand-500 text-white' : 'bg-red-500/10 border border-red-500/20 text-red-400')
-                        : 'bg-brand-500/10 border border-brand-500/20 text-brand-400';
+                    const activeColor = finished
+                        ? (p.pronostico === p.partido.resultado_real ? 'bg-volt-400/15 border border-volt-400/30 text-volt-400' : 'bg-red-500/10 border border-red-500/20 text-red-400')
+                        : 'bg-aqua-400/10 border border-aqua-400/20 text-aqua-300';
                     predBadge = `<span class="text-xs px-2.5 py-1 rounded-lg font-bold ${activeColor}">Pronóstico: ${label}</span>`;
                 } else {
-                    predBadge = `<span class="text-xs bg-surface-700 text-gray-500 px-2.5 py-1 rounded-lg">Sin pronóstico</span>`;
+                    predBadge = `<span class="text-xs bg-ink-700 text-zinc-500 px-2.5 py-1 rounded-lg">Sin pronóstico</span>`;
                 }
-                
+
                 // Result badge
                 let resultBadge = '';
                 if (finished && p.partido.resultado_real) {
                     const won = p.pronostico === p.partido.resultado_real;
-                    resultBadge = won 
-                        ? `<span class="text-xs font-black text-brand-400">+${p.puntos_ganados.toFixed(1)} pts</span>`
+                    resultBadge = won
+                        ? `<span class="text-xs font-black text-volt-400">+${p.puntos_ganados.toFixed(1)} pts</span>`
                         : `<span class="text-xs text-red-400 font-bold">0.0 pts</span>`;
                 } else if (started) {
-                    resultBadge = `<span class="text-[10px] bg-red-500/10 text-red-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider animate-pulse">En Juego</span>`;
+                    resultBadge = `<span class="chip chip-live !text-[9px]">En Juego</span>`;
                 } else {
-                    resultBadge = `<span class="text-[10px] bg-surface-700 text-gray-500 px-1.5 py-0.5 rounded">Pendiente</span>`;
+                    resultBadge = `<span class="chip chip-done !text-[9px]">Pendiente</span>`;
                 }
-                
+
                 // Comodin badge
                 const comodinBadge = p.es_comodin ? '<span class="text-sm" title="🃏 Comodín usado">🃏</span>' : '';
-                
+
                 return `
-                    <div class="p-3.5 rounded-xl bg-white/[0.01] border border-white/5 flex flex-col gap-2 hover:bg-white/[0.02] transition-colors">
+                    <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex flex-col gap-2 hover:bg-white/[0.04] transition-colors">
                         <div class="flex items-center justify-between min-w-0">
-                            <span class="text-[10px] text-gray-500 font-mono">${new Date(p.partido.fecha_partido).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })} ${new Date(p.partido.fecha_partido).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span class="text-[10px] text-zinc-600 font-display font-semibold">${new Date(p.partido.fecha_partido).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })} ${new Date(p.partido.fecha_partido).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
                             <div class="flex items-center gap-1.5">
                                 ${comodinBadge}
                                 ${resultBadge}
@@ -523,9 +485,9 @@
                         </div>
                         <div class="flex items-center justify-between gap-3 min-w-0">
                             <div class="flex items-center gap-2 min-w-0 flex-1">
-                                <span class="text-sm font-semibold text-white truncate text-right flex-1">${teamWithFlag(p.partido.equipo_local)}</span>
-                                <span class="text-[10px] font-bold text-gray-500 bg-surface-700/50 px-1.5 py-0.5 rounded">vs</span>
-                                <span class="text-sm font-semibold text-white truncate text-left flex-1">${teamWithFlag(p.partido.equipo_visitante)}</span>
+                                <span class="text-sm font-bold text-white truncate text-right flex-1">${teamWithFlag(p.partido.equipo_local)}</span>
+                                <span class="text-[9px] font-black text-zinc-600 bg-white/5 px-1.5 py-0.5 rounded">VS</span>
+                                <span class="text-sm font-bold text-white truncate text-left flex-1">${teamWithFlag(p.partido.equipo_visitante)}</span>
                             </div>
                             <div class="flex-shrink-0">
                                 ${predBadge}
@@ -539,11 +501,11 @@
             list.innerHTML = `<p class="text-sm text-red-400 text-center py-4">Error de conexión.</p>`;
         }
     }
-    
+
     function closeUserPredictionsModal() {
         document.getElementById('user-predictions-modal').classList.add('hidden');
     }
-    
+
     // Close modal on click outside
     window.addEventListener('click', (e) => {
         const modal = document.getElementById('user-predictions-modal');

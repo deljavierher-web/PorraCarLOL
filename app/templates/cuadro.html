@@ -2,52 +2,37 @@
 {% block title %}Cuadro de Eliminatorias{% endblock %}
 
 {% block body %}
-<!-- Navbar -->
-<nav class="glass-strong sticky top-0 z-50 border-b border-white/5">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
-        <div class="flex items-center justify-between h-16">
-            <a href="/dashboard" class="flex items-center gap-2">
-                <span class="text-2xl">⚽</span>
-                <span class="text-lg font-extrabold gradient-text hidden sm:inline">PorraCarLOL</span>
-            </a>
-            <div class="flex items-center gap-1 sm:gap-2">
-                <a href="/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">📊 Rankings</a>
-                <a href="/pronosticos" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">🎯 Pronósticos</a>
-                <a href="/cuadro" class="px-3 py-2 rounded-lg text-sm font-medium text-brand-400 bg-brand-500/10 transition-colors">🏆 Cuadro</a>
-                <a href="/admin" id="nav-admin-link" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors hidden">⚙️ Admin</a>
-            </div>
-            <div class="flex items-center gap-3">
-                <span id="nav-username" class="text-sm text-gray-400 hidden sm:inline"></span>
-                <button onclick="handleLogout()" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors">Salir</button>
-            </div>
-        </div>
-    </div>
-</nav>
+{% set active = 'cuadro' %}
+{% include '_nav.html' %}
 
-<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-28 sm:pb-14">
+
     <!-- Header -->
     <div class="mb-8 animate-slideUp">
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-white mb-2">
-            Fase de <span class="gradient-text">Eliminatorias</span>
+        <p class="eyebrow mb-2">Camino a la final</p>
+        <h1 class="font-display text-3xl sm:text-5xl font-bold tracking-tight text-white">
+            Cuadro de <span class="gradient-text">eliminatorias</span>
         </h1>
-        <p class="text-gray-400">Sigue el cuadro del torneo en tiempo real. Haz clic en cualquier partido comenzado para ver las apuestas de tus amigos.</p>
+        <p class="text-zinc-500 text-sm mt-3">Sigue el cuadro del torneo en tiempo real. Toca cualquier partido comenzado para ver las apuestas de tus amigos.</p>
     </div>
 
     <!-- Mobile Navigation Tabs (visible only on mobile) -->
-    <div class="flex sm:hidden gap-2 overflow-x-auto pb-3 mb-6 border-b border-surface-600 no-scrollbar animate-slideUp" style="animation-delay: 0.05s">
-        <button onclick="switchBracketTab('r16')" id="btn-tab-r16" class="flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold bg-brand-500/10 text-brand-400">Octavos</button>
-        <button onclick="switchBracketTab('qf')" id="btn-tab-qf" class="flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white">Cuartos</button>
-        <button onclick="switchBracketTab('sf')" id="btn-tab-sf" class="flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white">Semis</button>
-        <button onclick="switchBracketTab('fn')" id="btn-tab-fn" class="flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-white">Finales</button>
+    <div class="sm:hidden mb-6 animate-slideUp" style="animation-delay: 0.05s">
+        <div class="seg w-full !flex">
+            <button onclick="switchBracketTab('r16')" id="btn-tab-r16" class="seg-btn seg-active flex-1 !px-2">Octavos</button>
+            <button onclick="switchBracketTab('qf')" id="btn-tab-qf" class="seg-btn flex-1 !px-2">Cuartos</button>
+            <button onclick="switchBracketTab('sf')" id="btn-tab-sf" class="seg-btn flex-1 !px-2">Semis</button>
+            <button onclick="switchBracketTab('fn')" id="btn-tab-fn" class="seg-btn flex-1 !px-2">Finales</button>
+        </div>
     </div>
 
     <!-- Bracket Tree Container -->
     <div class="relative overflow-x-auto pb-8 min-h-[600px] no-scrollbar animate-slideUp" style="animation-delay: 0.1s">
         <div class="flex min-w-[800px] sm:min-w-0 justify-between gap-4 md:gap-8 lg:gap-12">
-            
+
             <!-- Column 1: Octavos de Final (Fase 5) -->
             <div id="col-r16" class="bracket-column flex-1 flex flex-col justify-around gap-4">
-                <h3 class="text-center text-xs font-black text-brand-400 tracking-widest uppercase mb-2 border-b border-brand-500/20 pb-2">Octavos de Final</h3>
+                <h3 class="text-center font-display text-[11px] font-bold text-volt-400 tracking-[0.2em] uppercase mb-2 border-b border-volt-400/20 pb-2.5">Octavos de Final</h3>
                 <div id="r16-list" class="space-y-4 flex flex-col justify-around h-full min-h-[480px]">
                     <!-- Rendered matches -->
                 </div>
@@ -55,7 +40,7 @@
 
             <!-- Column 2: Cuartos de Final (Fase 6) -->
             <div id="col-qf" class="bracket-column flex-1 flex flex-col justify-around gap-4 sm:flex hidden">
-                <h3 class="text-center text-xs font-black text-gray-400 tracking-widest uppercase mb-2 border-b border-white/5 pb-2">Cuartos de Final</h3>
+                <h3 class="text-center font-display text-[11px] font-bold text-aqua-300 tracking-[0.2em] uppercase mb-2 border-b border-aqua-400/20 pb-2.5">Cuartos de Final</h3>
                 <div id="qf-list" class="space-y-4 flex flex-col justify-around h-full min-h-[480px]">
                     <!-- Rendered matches -->
                 </div>
@@ -63,7 +48,7 @@
 
             <!-- Column 3: Semifinales (Fase 7) -->
             <div id="col-sf" class="bracket-column flex-1 flex flex-col justify-around gap-4 sm:flex hidden">
-                <h3 class="text-center text-xs font-black text-gray-400 tracking-widest uppercase mb-2 border-b border-white/5 pb-2">Semifinales</h3>
+                <h3 class="text-center font-display text-[11px] font-bold text-zinc-400 tracking-[0.2em] uppercase mb-2 border-b border-white/10 pb-2.5">Semifinales</h3>
                 <div id="sf-list" class="space-y-4 flex flex-col justify-around h-full min-h-[480px]">
                     <!-- Rendered matches -->
                 </div>
@@ -71,7 +56,7 @@
 
             <!-- Column 4: Finales (Fase 8 & 9) -->
             <div id="col-fn" class="bracket-column flex-1 flex flex-col justify-around gap-4 sm:flex hidden">
-                <h3 class="text-center text-xs font-black text-yellow-400 tracking-widest uppercase mb-2 border-b border-yellow-500/20 pb-2">Finales</h3>
+                <h3 class="text-center font-display text-[11px] font-bold text-gold tracking-[0.2em] uppercase mb-2 border-b border-gold/25 pb-2.5">Finales</h3>
                 <div id="fn-list" class="space-y-6 flex flex-col justify-around h-full min-h-[480px]">
                     <!-- Rendered matches -->
                 </div>
@@ -82,13 +67,13 @@
 </main>
 
 <!-- Social Predictions Modal -->
-<div id="social-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
-    <div class="glass-strong rounded-2xl p-6 w-full max-w-md mx-4 animate-bounceIn max-h-[80vh] overflow-y-auto">
+<div id="social-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="glass-strong rounded-2xl p-6 w-full max-w-md animate-bounceIn max-h-[80vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-bold text-white">👥 Pronósticos de Todos</h3>
-            <button onclick="closeSocialModal()" class="text-gray-500 hover:text-white transition-colors text-xl">&times;</button>
+            <h3 class="font-display text-lg font-bold text-white">👥 Pronósticos de Todos</h3>
+            <button onclick="closeSocialModal()" class="text-zinc-500 hover:text-white transition-colors text-xl leading-none">&times;</button>
         </div>
-        <p id="social-match-name" class="text-sm text-gray-400 mb-4"></p>
+        <p id="social-match-name" class="text-sm text-zinc-400 mb-4"></p>
         <div id="social-predictions-list" class="space-y-2">
             <div class="shimmer h-10 rounded-lg"></div>
         </div>
@@ -100,8 +85,6 @@
     const token = localStorage.getItem('porra_token');
     const user = JSON.parse(localStorage.getItem('porra_user') || '{}');
     if (!token) window.location.href = '/';
-    if (user.es_administrador) document.getElementById('nav-admin-link').classList.remove('hidden');
-    document.getElementById('nav-username').textContent = user.username || '';
 
     let bracketMatches = [];
     let myPredictions = {};
@@ -169,14 +152,14 @@
         const finalsList = [];
         if (matchesByJornada[9] && matchesByJornada[9][0]) finalsList.push({ ...matchesByJornada[9][0], isFinal: true });
         if (matchesByJornada[8] && matchesByJornada[8][0]) finalsList.push({ ...matchesByJornada[8][0], isTercerPuesto: true });
-        
+
         renderColumn(lists.fn, finalsList);
     }
 
     function renderColumn(parentEl, matches) {
         if (!matches || !matches.length) {
             parentEl.innerHTML = `
-                <div class="text-center py-8 text-xs text-gray-500 font-medium">
+                <div class="text-center py-8 text-xs text-zinc-600 font-bold uppercase tracking-wider border border-dashed border-white/8 rounded-xl">
                     No sembrado
                 </div>
             `;
@@ -187,40 +170,40 @@
             const pred = myPredictions[match.id];
             const finished = match.finalizado;
             const started = match.ha_comenzado;
-            
+
             // Format prediction label
             let predLabel = '';
             if (pred && pred.pronostico) {
                 const isComodin = pred.es_comodin ? ' 🃏' : '';
-                let resultClass = 'text-brand-400';
+                let resultClass = 'text-aqua-300';
                 if (finished) {
-                    resultClass = pred.pronostico === match.resultado_real ? 'text-brand-400' : 'text-red-400';
+                    resultClass = pred.pronostico === match.resultado_real ? 'text-volt-400' : 'text-red-400';
                 }
-                predLabel = `<div class="text-[10px] font-bold ${resultClass} mt-1 flex items-center justify-center gap-0.5">Apuesta: ${pred.pronostico}${isComodin}</div>`;
+                predLabel = `<div class="text-[10px] font-bold ${resultClass} mt-1.5 flex items-center justify-center gap-0.5">Apuesta: ${pred.pronostico}${isComodin}</div>`;
             }
 
             // Highlighting winners if finished
             const localWinner = finished && match.resultado_real === '1';
             const visitWinner = finished && match.resultado_real === '2';
 
-            const localClass = localWinner ? 'text-brand-400 font-black' : finished ? 'text-gray-500 line-through font-normal' : 'text-white font-bold';
-            const visitClass = visitWinner ? 'text-brand-400 font-black' : finished ? 'text-gray-500 line-through font-normal' : 'text-white font-bold';
+            const localClass = localWinner ? 'text-volt-400 font-black' : finished ? 'text-zinc-600 line-through font-normal' : 'text-white font-bold';
+            const visitClass = visitWinner ? 'text-volt-400 font-black' : finished ? 'text-zinc-600 line-through font-normal' : 'text-white font-bold';
 
             // Match status badge
-            const statusLabel = finished 
-                ? `<span class="text-[8px] bg-surface-500/30 text-gray-400 px-1.5 py-0.5 rounded font-black uppercase">FIN</span>` 
-                : started 
-                ? `<span class="text-[8px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded font-black uppercase tracking-wider animate-pulse">EN VIVO</span>` 
-                : `<span class="text-[8px] bg-white/5 text-gray-500 px-1.5 py-0.5 rounded font-bold">${new Date(match.fecha_partido).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}</span>`;
+            const statusLabel = finished
+                ? `<span class="chip chip-done !text-[8px] !px-1.5">FIN</span>`
+                : started
+                ? `<span class="chip chip-live !text-[8px] !px-1.5">● EN VIVO</span>`
+                : `<span class="chip chip-done !text-[8px] !px-1.5">${new Date(match.fecha_partido).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}</span>`;
 
             // Card title (type of final if applicable)
             let roundTitle = '';
-            if (match.isFinal) roundTitle = '<div class="text-[9px] font-black text-yellow-400 text-center uppercase tracking-widest mb-1">👑 Gran Final</div>';
-            else if (match.isTercerPuesto) roundTitle = '<div class="text-[9px] font-black text-amber-600 text-center uppercase tracking-widest mb-1">🥉 3º y 4º Puesto</div>';
+            if (match.isFinal) roundTitle = '<div class="font-display text-[9px] font-bold text-gold text-center uppercase tracking-[0.2em] mb-1.5">👑 Gran Final</div>';
+            else if (match.isTercerPuesto) roundTitle = '<div class="font-display text-[9px] font-bold text-amber-600 text-center uppercase tracking-[0.2em] mb-1.5">🥉 3º y 4º Puesto</div>';
 
             const card = document.createElement('div');
             const isClickable = started || finished;
-            card.className = `bracket-card glass p-3.5 rounded-xl border border-white/5 relative flex flex-col justify-between transition-all ${isClickable ? 'cursor-pointer hover:bg-white/[0.03] hover:border-brand-500/20' : ''}`;
+            card.className = `bracket-card card !rounded-xl p-3.5 relative flex flex-col justify-between transition-all ${match.isFinal ? '!border-gold/30' : ''} ${isClickable ? 'cursor-pointer hover:!border-volt-400/30 hover:-translate-y-0.5' : ''}`;
             if (isClickable) {
                 card.onclick = () => openSocialModal(match.id, `${match.equipo_local} vs ${match.equipo_visitante}`);
             }
@@ -228,29 +211,29 @@
             card.innerHTML = `
                 ${roundTitle}
                 <!-- Card Header -->
-                <div class="flex items-center justify-between mb-2 border-b border-white/5 pb-1">
+                <div class="flex items-center justify-between mb-2 border-b border-white/5 pb-1.5">
                     ${statusLabel}
-                    <span class="text-[9px] text-gray-500 font-mono">${new Date(match.fecha_partido).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                    <span class="text-[9px] text-zinc-600 font-display font-semibold">${new Date(match.fecha_partido).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
 
                 <!-- Teams & Scores -->
-                <div class="space-y-1 mt-1">
+                <div class="space-y-1.5 mt-1">
                     <!-- Local -->
                     <div class="flex items-center justify-between gap-2 min-w-0">
                         <span class="text-xs truncate ${localClass}">${teamWithFlag(match.equipo_local)}</span>
-                        ${finished ? `<span class="text-xs font-bold font-mono ${localWinner ? 'text-brand-400' : 'text-gray-500'}">${match.resultado_real === '1' ? '✓' : ''}</span>` : ''}
+                        ${finished ? `<span class="text-xs font-bold ${localWinner ? 'text-volt-400' : 'text-zinc-600'}">${match.resultado_real === '1' ? '✓' : ''}</span>` : ''}
                     </div>
                     <!-- Visitor -->
                     <div class="flex items-center justify-between gap-2 min-w-0">
                         <span class="text-xs truncate ${visitClass}">${teamWithFlag(match.equipo_visitante)}</span>
-                        ${finished ? `<span class="text-xs font-bold font-mono ${visitWinner ? 'text-brand-400' : 'text-gray-500'}">${match.resultado_real === '2' ? '✓' : ''}</span>` : ''}
+                        ${finished ? `<span class="text-xs font-bold ${visitWinner ? 'text-volt-400' : 'text-zinc-600'}">${match.resultado_real === '2' ? '✓' : ''}</span>` : ''}
                     </div>
                 </div>
-                
+
                 ${predLabel}
-                ${isClickable ? '<div class="text-[7px] uppercase tracking-wider text-center text-gray-500 mt-2 font-bold">👥 Ver apuestas del grupo</div>' : ''}
+                ${isClickable ? '<div class="text-[7px] uppercase tracking-[0.15em] text-center text-zinc-600 mt-2 font-bold">👥 Ver apuestas del grupo</div>' : ''}
             `;
-            
+
             parentEl.appendChild(card);
         });
     }
@@ -262,13 +245,11 @@
             const btn = document.getElementById(`btn-tab-${t}`);
             const col = document.getElementById(`col-${t}`);
             if (t === tab) {
-                btn.classList.add('bg-brand-500/10', 'text-brand-400');
-                btn.classList.remove('text-gray-400');
+                btn.classList.add('seg-active');
                 col.classList.remove('hidden');
                 col.classList.add('flex');
             } else {
-                btn.classList.remove('bg-brand-500/10', 'text-brand-400');
-                btn.classList.add('text-gray-400');
+                btn.classList.remove('seg-active');
                 col.classList.add('hidden');
                 col.classList.remove('flex');
             }
@@ -280,29 +261,29 @@
         const modal = document.getElementById('social-modal');
         const nameLabel = document.getElementById('social-match-name');
         const list = document.getElementById('social-predictions-list');
-        
+
         nameLabel.textContent = matchName;
         list.innerHTML = '<div class="shimmer h-10 rounded-lg"></div>';
         modal.classList.remove('hidden');
-        
+
         try {
             const res = await apiFetch(`/api/pronosticos-partido/${matchId}`);
             const data = await res.json();
-            
+
             if (!res.ok) {
                 list.innerHTML = `<p class="text-xs text-red-400">${data.error || 'Error al cargar'}</p>`;
                 return;
             }
-            
+
             const preds = data.pronosticos || [];
             const match = data.partido;
             const finished = match.finalizado;
-            
+
             if (!preds.length) {
-                list.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Nadie ha pronosticado este partido.</p>';
+                list.innerHTML = '<p class="text-sm text-zinc-500 text-center py-4">Nadie ha pronosticado este partido.</p>';
                 return;
             }
-            
+
             list.innerHTML = preds.map(p => {
                 const color = getUserColor(p.username);
                 const isComodin = p.es_comodin ? '<span class="text-xs">🃏</span>' : '';
@@ -310,18 +291,18 @@
                 let pointsStr = '';
                 if (finished && match.resultado_real) {
                     const won = p.pronostico === match.resultado_real;
-                    pointsStr = won ? `<span class="text-xs font-bold text-brand-400">+${p.puntos_ganados.toFixed(1)} pts</span>` : '<span class="text-xs text-red-400">0 pts</span>';
+                    pointsStr = won ? `<span class="text-xs font-bold text-volt-400">+${p.puntos_ganados.toFixed(1)} pts</span>` : '<span class="text-xs text-red-400">0 pts</span>';
                 }
                 return `
                     <div class="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
                         <div class="flex items-center gap-2 min-w-0">
-                            <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style="background-color: ${color}">
+                            <div class="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style="background-color: ${color}">
                                 ${p.username.charAt(0).toUpperCase()}
                             </div>
-                            <span class="text-sm font-medium text-gray-300 truncate">${p.username} ${isComodin}</span>
+                            <span class="text-sm font-semibold text-zinc-300 truncate">${p.username} ${isComodin}</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold text-white px-2 py-0.5 rounded-lg bg-surface-700">${resultLabels[p.pronostico]}</span>
+                            <span class="font-display text-sm font-bold text-white px-2.5 py-0.5 rounded-lg bg-ink-700 border border-white/8">${resultLabels[p.pronostico]}</span>
                             ${pointsStr}
                         </div>
                     </div>
@@ -331,7 +312,7 @@
             list.innerHTML = '<p class="text-xs text-red-400">Error de conexión.</p>';
         }
     }
-    
+
     function closeSocialModal() {
         document.getElementById('social-modal').classList.add('hidden');
     }
@@ -347,18 +328,6 @@
 <style>
     .bracket-column {
         min-width: 200px;
-    }
-    
-    .bracket-card {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
-    
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-    .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
     }
 </style>
 {% endblock %}

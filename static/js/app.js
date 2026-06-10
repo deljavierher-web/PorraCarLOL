@@ -68,7 +68,7 @@ function showToast(type, message, duration = 4000) {
     if (!container) return;
 
     const toast = document.createElement('div');
-    toast.className = `toast ${type} glass-strong rounded-xl px-5 py-3.5 shadow-2xl animate-toastIn flex items-start gap-3`;
+    toast.className = `toast ${type} glass-strong px-5 py-3.5 shadow-2xl animate-toastIn flex items-start gap-3`;
 
     const icons = {
         success: '✅',
@@ -79,9 +79,9 @@ function showToast(type, message, duration = 4000) {
     toast.innerHTML = `
         <span class="text-lg flex-shrink-0 mt-0.5">${icons[type] || 'ℹ️'}</span>
         <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-white">${message}</p>
+            <p class="text-sm font-semibold text-white">${message}</p>
         </div>
-        <button onclick="dismissToast(this.parentElement)" class="text-gray-500 hover:text-white transition-colors flex-shrink-0 text-xs mt-0.5">✕</button>
+        <button onclick="dismissToast(this.parentElement)" class="text-zinc-500 hover:text-white transition-colors flex-shrink-0 text-xs mt-0.5">✕</button>
     `;
 
     container.appendChild(toast);
@@ -128,7 +128,7 @@ function formatDate(isoString) {
  */
 function getUserColor(name) {
     const colors = [
-        '#22a86e', '#3b82f6', '#f59e0b', '#ef4444',
+        '#84cc16', '#06b6d4', '#f59e0b', '#ef4444',
         '#8b5cf6', '#ec4899', '#14b8a6', '#f97316',
     ];
     let hash = 0;

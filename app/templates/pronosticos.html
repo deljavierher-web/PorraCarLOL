@@ -2,147 +2,114 @@
 {% block title %}Mis Pronósticos{% endblock %}
 
 {% block body %}
-<!-- Navbar (same as dashboard) -->
-<nav class="glass-strong sticky top-0 z-50 border-b border-white/5">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
-        <div class="flex items-center justify-between h-16">
-            <a href="/dashboard" class="flex items-center gap-2">
-                <span class="text-2xl">⚽</span>
-                <span class="text-lg font-extrabold gradient-text hidden sm:inline">PorraCarLOL</span>
-            </a>
-            <div class="flex items-center gap-1 sm:gap-2">
-                <a href="/dashboard"
-                    class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
-                    📊 Rankings
-                </a>
-                <a href="/pronosticos"
-                    class="px-3 py-2 rounded-lg text-sm font-medium text-brand-400 bg-brand-500/10 transition-colors">
-                    🎯 Pronósticos
-                </a>
-                <a href="/cuadro"
-                    class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">
-                    🏆 Cuadro
-                </a>
-                <a href="/admin" id="nav-admin-link"
-                    class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors hidden">
-                    ⚙️ Admin
-                </a>
-            </div>
-            <div class="flex items-center gap-3">
-                <span id="nav-username" class="text-sm text-gray-400 hidden sm:inline"></span>
-                <button onclick="handleLogout()"
-                    class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors">
-                    Salir
-                </button>
-            </div>
-        </div>
-    </div>
-</nav>
+{% set active = 'pronosticos' %}
+{% include '_nav.html' %}
 
 <!-- Main Content -->
-<main class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+<main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 pb-28 sm:pb-14">
+
     <!-- Header -->
     <div class="mb-8 animate-slideUp">
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-white mb-2">
-            Mis <span class="gradient-text">Pronósticos</span>
+        <p class="eyebrow mb-2">Tu quiniela</p>
+        <h1 class="font-display text-3xl sm:text-5xl font-bold tracking-tight text-white">
+            Mis <span class="gradient-text">pronósticos</span>
         </h1>
-        <p class="text-gray-400">Selecciona 1, X o 2 para cada partido del Mundial 2026. Usa tu 🃏 comodín sabiamente.</p>
+        <p class="text-zinc-500 text-sm mt-3">Elige 1, X o 2 en cada partido. Usa tu 🃏 comodín sabiamente: multiplica los puntos.</p>
     </div>
 
     <!-- Jornada Selector -->
-    <div class="flex items-center gap-4 mb-6 animate-slideUp" style="animation-delay: 0.1s">
-        <label class="text-sm text-gray-400 font-medium">Fase:</label>
+    <div class="flex items-center flex-wrap gap-4 mb-6 animate-slideUp" style="animation-delay: 0.1s">
         <select id="jornada-select" onchange="isInitialLoad = true; loadPronosticos()"
-            class="bg-surface-700 border border-surface-500 text-white px-4 py-2.5 rounded-xl text-sm focus:border-brand-500 min-w-[200px]">
+            class="bg-ink-800 border border-white/10 text-white px-4 py-2.5 rounded-xl text-sm font-semibold min-w-[210px]">
         </select>
-        <div id="comodin-status" class="ml-auto text-sm text-gray-400 hidden">
-            <span class="text-xl mr-1">🃏</span> Comodín: <span id="comodin-label" class="font-semibold text-yellow-400">No asignado</span>
+        <div id="comodin-status" class="ml-auto text-sm text-zinc-400 hidden">
+            <span class="text-lg mr-1">🃏</span> Comodín: <span id="comodin-label" class="font-bold text-gold">No asignado</span>
         </div>
     </div>
 
     <!-- Countdown Timer -->
-    <div id="countdown-banner" class="hidden mb-6 glass rounded-2xl p-4 border border-brand-500/20 bg-brand-500/5 animate-slideUp" style="animation-delay: 0.15s">
+    <div id="countdown-banner" class="hidden mb-5 card p-4 !border-aqua-400/20 animate-slideUp" style="animation-delay: 0.15s">
         <div class="flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-2">
-                <span class="text-xl">⏳</span>
-                <span class="text-sm text-gray-300">Cierre de pronósticos en:</span>
+                <span class="text-lg">⏳</span>
+                <span class="text-sm font-semibold text-zinc-300">Cierre de pronósticos en:</span>
             </div>
-            <div id="countdown-timer" class="flex items-center gap-1">
-                <span id="cd-days" class="bg-surface-700 text-brand-400 font-bold text-sm px-2 py-1 rounded-lg">0d</span>
-                <span id="cd-hours" class="bg-surface-700 text-brand-400 font-bold text-sm px-2 py-1 rounded-lg">0h</span>
-                <span id="cd-minutes" class="bg-surface-700 text-brand-400 font-bold text-sm px-2 py-1 rounded-lg">0m</span>
-                <span id="cd-seconds" class="bg-surface-700 text-brand-400 font-bold text-sm px-2 py-1 rounded-lg">0s</span>
+            <div id="countdown-timer" class="flex items-center gap-1.5">
+                <span id="cd-days" class="bg-ink-700 border border-white/5 text-aqua-300 font-display font-bold text-sm px-2.5 py-1 rounded-lg">0d</span>
+                <span id="cd-hours" class="bg-ink-700 border border-white/5 text-aqua-300 font-display font-bold text-sm px-2.5 py-1 rounded-lg">0h</span>
+                <span id="cd-minutes" class="bg-ink-700 border border-white/5 text-aqua-300 font-display font-bold text-sm px-2.5 py-1 rounded-lg">0m</span>
+                <span id="cd-seconds" class="bg-ink-700 border border-white/5 text-aqua-300 font-display font-bold text-sm px-2.5 py-1 rounded-lg">0s</span>
             </div>
         </div>
     </div>
 
     <!-- Progress Stats Banner -->
-    <div id="progress-banner" class="hidden mb-6 glass rounded-2xl p-4 animate-slideUp" style="animation-delay: 0.2s">
+    <div id="progress-banner" class="hidden mb-6 card p-4 animate-slideUp" style="animation-delay: 0.2s">
         <div class="flex items-center justify-between flex-wrap gap-3">
             <div class="flex items-center gap-4 flex-wrap">
                 <div class="flex items-center gap-2">
-                    <span class="text-lg">📊</span>
-                    <span class="text-sm text-gray-300">Pronosticados: <span id="progress-count" class="font-bold text-brand-400">0/0</span></span>
+                    <span class="text-base">📊</span>
+                    <span class="text-sm text-zinc-400">Pronosticados: <span id="progress-count" class="font-display font-bold text-volt-400">0/0</span></span>
                 </div>
                 <div class="flex items-center gap-2 border-l border-white/5 pl-4">
-                    <span class="text-lg">🃏</span>
-                    <span class="text-sm text-gray-300">Comodín <span id="progress-multiplier" class="text-yellow-400 text-[10px] font-black bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20">x2.0</span>: <span id="progress-comodin" class="font-semibold text-yellow-400">No asignado</span></span>
+                    <span class="text-base">🃏</span>
+                    <span class="text-sm text-zinc-400">Comodín <span id="progress-multiplier" class="chip chip-gold !text-[9px]">x2.0</span>: <span id="progress-comodin" class="font-bold text-gold">No asignado</span></span>
                 </div>
                 <div class="flex items-center gap-2 border-l border-white/5 pl-4">
-                    <span class="text-lg">💰</span>
-                    <span class="text-sm text-gray-300">Puntos posibles: <span id="progress-possible-points" class="font-black text-yellow-400">0.0</span> <span class="text-xs text-gray-500">pts</span></span>
+                    <span class="text-base">💰</span>
+                    <span class="text-sm text-zinc-400">Puntos posibles: <span id="progress-possible-points" class="font-display font-black text-gold">0.0</span> <span class="text-xs text-zinc-600">pts</span></span>
                 </div>
             </div>
-            <div id="progress-missing" class="text-xs text-orange-400 font-medium hidden">
+            <div id="progress-missing" class="text-xs text-orange-400 font-bold hidden">
                 ⚠️ Faltan <span id="progress-missing-count">0</span> partidos
             </div>
         </div>
         <!-- Progress bar -->
-        <div class="mt-3 w-full bg-surface-700 rounded-full h-1.5">
-            <div id="progress-bar" class="bg-gradient-to-r from-brand-600 to-brand-400 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+        <div class="mt-3.5 w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+            <div id="progress-bar" class="bg-gradient-to-r from-volt-400 to-aqua-400 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
         </div>
     </div>
 
     <!-- Matches Grid -->
     <div id="matches-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 stagger-children">
         <!-- Loading -->
-        <div class="shimmer h-36 rounded-2xl"></div>
-        <div class="shimmer h-36 rounded-2xl"></div>
-        <div class="shimmer h-36 rounded-2xl"></div>
-        <div class="shimmer h-36 rounded-2xl"></div>
+        <div class="shimmer h-40 rounded-2xl"></div>
+        <div class="shimmer h-40 rounded-2xl"></div>
+        <div class="shimmer h-40 rounded-2xl"></div>
+        <div class="shimmer h-40 rounded-2xl"></div>
     </div>
 
     <!-- Empty State -->
     <div id="matches-empty" class="hidden py-16 text-center">
         <span class="text-5xl block mb-4">⚽</span>
-        <p class="text-gray-400 text-lg font-medium">No hay partidos para esta jornada.</p>
-        <p class="text-gray-500 text-sm mt-2">Selecciona otra jornada o espera a que se publiquen los partidos.</p>
+        <p class="text-zinc-300 text-lg font-bold">No hay partidos para esta jornada.</p>
+        <p class="text-zinc-600 text-sm mt-2">Selecciona otra jornada o espera a que se publiquen los partidos.</p>
     </div>
 
     <!-- Submit Section -->
-    <div id="submit-section" class="mt-8 flex justify-center hidden animate-slideUp">
+    <div id="submit-section" class="mt-9 flex justify-center hidden animate-slideUp">
         <button id="btn-submit-phase" onclick="submitPhase()"
-            class="px-8 py-3.5 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold rounded-xl shadow-lg shadow-brand-500/25 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]">
+            class="btn-primary px-9 py-3.5 rounded-xl text-sm">
             🔒 Enviar y Bloquear Pronósticos
         </button>
     </div>
 
     <!-- Locked Section -->
-    <div id="locked-section" class="mt-8 p-5 glass rounded-2xl text-center border border-yellow-500/20 bg-yellow-500/5 hidden animate-slideUp">
-        <p class="text-sm font-semibold text-yellow-400 flex items-center justify-center gap-2">
+    <div id="locked-section" class="mt-9 p-5 card !border-gold/25 text-center hidden animate-slideUp">
+        <p class="text-sm font-bold text-gold flex items-center justify-center gap-2">
             🔒 Pronósticos enviados y bloqueados para esta fase. ¡Buena suerte! ⚽
         </p>
     </div>
 </main>
 
 <!-- Social Predictions Modal -->
-<div id="social-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
-    <div class="glass-strong rounded-2xl p-6 w-full max-w-md mx-4 animate-bounceIn max-h-[80vh] overflow-y-auto">
+<div id="social-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="glass-strong rounded-2xl p-6 w-full max-w-md animate-bounceIn max-h-[80vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-bold text-white">👥 Pronósticos de Todos</h3>
-            <button onclick="closeSocialModal()" class="text-gray-500 hover:text-white transition-colors text-xl">&times;</button>
+            <h3 class="font-display text-lg font-bold text-white">👥 Pronósticos de Todos</h3>
+            <button onclick="closeSocialModal()" class="text-zinc-500 hover:text-white transition-colors text-xl leading-none">&times;</button>
         </div>
-        <p id="social-match-name" class="text-sm text-gray-400 mb-4"></p>
+        <p id="social-match-name" class="text-sm text-zinc-400 mb-4"></p>
         <div id="social-predictions-list" class="space-y-2">
             <div class="shimmer h-10 rounded-lg"></div>
         </div>
@@ -150,13 +117,13 @@
 </div>
 
 <!-- Custom Submit Confirmation Modal -->
-<div id="submit-confirm-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
-    <div class="glass-strong rounded-2xl p-6 w-full max-w-md mx-4 animate-bounceIn">
+<div id="submit-confirm-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="glass-strong rounded-2xl p-6 w-full max-w-md animate-bounceIn">
         <div class="flex items-center gap-3 mb-4">
             <span id="confirm-modal-icon" class="text-3xl">⚠️</span>
-            <h3 id="confirm-modal-title" class="text-lg font-bold text-white">Pronósticos Incompletos</h3>
+            <h3 id="confirm-modal-title" class="font-display text-lg font-bold text-white">Pronósticos Incompletos</h3>
         </div>
-        <p id="confirm-modal-body" class="text-sm text-gray-300 mb-6"></p>
+        <p id="confirm-modal-body" class="text-sm text-zinc-300 mb-6"></p>
         <div class="flex gap-3">
             <button id="confirm-modal-no-btn" class="flex-1 px-4 py-2.5 rounded-xl font-bold transition-colors">
                 No, volver
@@ -173,8 +140,6 @@
     const token = localStorage.getItem('porra_token');
     const user = JSON.parse(localStorage.getItem('porra_user') || '{}');
     if (!token) window.location.href = '/';
-    if (user.es_administrador) document.getElementById('nav-admin-link').classList.remove('hidden');
-    document.getElementById('nav-username').textContent = user.username || '';
 
     let matchesData = [];
     let myPredictions = {};
@@ -221,10 +186,10 @@
 
         // Show loading
         container.innerHTML = `
-            <div class="shimmer h-36 rounded-2xl"></div>
-            <div class="shimmer h-36 rounded-2xl"></div>
-            <div class="shimmer h-36 rounded-2xl"></div>
-            <div class="shimmer h-36 rounded-2xl"></div>
+            <div class="shimmer h-40 rounded-2xl"></div>
+            <div class="shimmer h-40 rounded-2xl"></div>
+            <div class="shimmer h-40 rounded-2xl"></div>
+            <div class="shimmer h-40 rounded-2xl"></div>
         `;
 
         try {
@@ -259,23 +224,23 @@
             }
 
             empty.classList.add('hidden');
-            
+
             if (!abierta) {
                 container.innerHTML = '';
                 if (parseInt(jornada) >= 4) {
                     container.innerHTML = `
-                        <div class="col-span-full py-16 text-center glass rounded-2xl border border-brand-500/20 bg-brand-500/5 animate-slideUp">
+                        <div class="col-span-full py-16 text-center card !border-aqua-400/20 animate-slideUp">
                             <span class="text-6xl block mb-4">🏆</span>
-                            <h3 class="text-xl font-bold text-white mb-2">Eliminatorias Bloqueadas</h3>
-                            <p class="text-gray-400 max-w-md mx-auto text-sm px-4">Las fases de eliminación directa se abrirán próximamente con un cuadro visual interactivo. ¡Prepárate para la fase final!</p>
+                            <h3 class="font-display text-xl font-bold text-white mb-2">Eliminatorias Bloqueadas</h3>
+                            <p class="text-zinc-500 max-w-md mx-auto text-sm px-4">Las fases de eliminación directa se abrirán próximamente con un cuadro visual interactivo. ¡Prepárate para la fase final!</p>
                         </div>
                     `;
                 } else {
                     container.innerHTML = `
-                        <div class="col-span-full py-16 text-center glass rounded-2xl border border-yellow-500/20 bg-yellow-500/5 animate-slideUp">
+                        <div class="col-span-full py-16 text-center card !border-gold/25 animate-slideUp">
                             <span class="text-6xl block mb-4">🔒</span>
-                            <h3 class="text-xl font-bold text-white mb-2">Fase Bloqueada</h3>
-                            <p class="text-gray-400 max-w-md mx-auto text-sm px-4">Esta fase se abrirá automáticamente para pronósticos una vez que comience la Fase ${parseInt(jornada) - 1}.</p>
+                            <h3 class="font-display text-xl font-bold text-white mb-2">Fase Bloqueada</h3>
+                            <p class="text-zinc-500 max-w-md mx-auto text-sm px-4">Esta fase se abrirá automáticamente para pronósticos una vez que comience la Fase ${parseInt(jornada) - 1}.</p>
                         </div>
                     `;
                 }
@@ -286,7 +251,7 @@
                 document.getElementById('countdown-banner').classList.add('hidden');
                 return;
             }
-            
+
             // Adjust stagger animation based on isInitialLoad
             if (isInitialLoad) {
                 container.classList.add('stagger-children');
@@ -299,7 +264,7 @@
             updateSubmitSectionStatus();
             updateProgressBanner();
             updateCountdownBanner();
-            
+
             isInitialLoad = false;
         } catch (err) {
             console.error('Error loading pronosticos:', err);
@@ -320,7 +285,7 @@
             const statusClass = finished ? 'finished' : started ? 'started' : '';
 
             const card = document.createElement('div');
-            card.className = `match-card glass rounded-2xl p-5 sm:p-6 relative ${statusClass}`;
+            card.className = `match-card card p-5 sm:p-6 relative ${statusClass}`;
             card.style.animationDelay = `${idx * 0.05}s`;
 
             // Result badge for finished matches
@@ -330,8 +295,8 @@
                 const won = pred && pred.pronostico === match.resultado_real;
                 resultBadge = `
                     <div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
-                        <span class="text-xs text-gray-500">Resultado: <span class="font-bold ${match.resultado_real === '1' ? 'text-blue-400' : match.resultado_real === 'X' ? 'text-gray-300' : 'text-red-400'}">${match.resultado_real} (${resultLabels[match.resultado_real]})</span></span>
-                        ${pred ? `<span class="text-xs font-bold ${won ? 'text-brand-400' : 'text-red-400'}">${won ? '✅ +' + pred.puntos_ganados.toFixed(1) + ' pts' : '❌ 0 pts'}</span>` : '<span class="text-xs text-gray-500">Sin pronóstico</span>'}
+                        <span class="text-xs text-zinc-500">Resultado: <span class="font-bold ${match.resultado_real === '1' ? 'text-aqua-300' : match.resultado_real === 'X' ? 'text-zinc-300' : 'text-red-400'}">${match.resultado_real} (${resultLabels[match.resultado_real]})</span></span>
+                        ${pred ? `<span class="text-xs font-black ${won ? 'text-volt-400' : 'text-red-400'}">${won ? '✅ +' + pred.puntos_ganados.toFixed(1) + ' pts' : '❌ 0 pts'}</span>` : '<span class="text-xs text-zinc-600">Sin pronóstico</span>'}
                     </div>
                 `;
             }
@@ -341,31 +306,31 @@
             const fechaStr = fecha.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
             const horaStr = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
-            const statusBadge = finished 
-                ? '<span class="bg-gray-600/25 text-gray-400 px-2 py-0.5 rounded-full font-bold text-[10px] uppercase tracking-wider">Finalizado</span>' 
-                : started 
-                ? '<span class="bg-red-500/25 text-red-400 px-2 py-0.5 rounded-full font-bold text-[10px] uppercase tracking-wider animate-pulse">En Juego</span>' 
-                : '<span class="bg-brand-500/10 text-brand-400 px-2 py-0.5 rounded-full font-bold text-[10px] uppercase tracking-wider">Pendiente</span>';
+            const statusBadge = finished
+                ? '<span class="chip chip-done">Finalizado</span>'
+                : started
+                ? '<span class="chip chip-live">● En Juego</span>'
+                : '<span class="chip chip-pending">Pendiente</span>';
 
             card.innerHTML = `
                 <!-- Match Header -->
-                <div class="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
+                <div class="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
                     <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-500 font-medium">${fechaStr} · ${horaStr}</span>
+                        <span class="text-[11px] text-zinc-500 font-display font-semibold">${fechaStr} · ${horaStr}</span>
                         ${statusBadge}
                     </div>
                     <div class="flex items-center gap-2">
-                        ${pred && pred.es_comodin ? '<span class="bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full font-semibold text-[10px] flex items-center gap-0.5">🃏 COMODÍN</span>' : ''}
-                        ${started || finished ? `<button onclick="openSocialModal(${match.id}, '${match.equipo_local} vs ${match.equipo_visitante}')" class="text-xs bg-white/5 hover:bg-white/10 text-gray-300 px-2.5 py-1 rounded-full transition-colors flex items-center gap-1">👥 Ver</button>` : ''}
+                        ${pred && pred.es_comodin ? '<span class="chip chip-gold">🃏 Comodín</span>' : ''}
+                        ${started || finished ? `<button onclick="openSocialModal(${match.id}, '${match.equipo_local} vs ${match.equipo_visitante}')" class="btn-ghost text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">👥 Ver</button>` : ''}
                     </div>
                 </div>
 
                 <!-- Teams Row -->
-                <div class="flex items-center justify-between gap-4 my-4">
+                <div class="flex items-center justify-between gap-3 my-4">
                     <div class="flex-1 text-right min-w-0">
                         <p class="text-sm sm:text-base font-bold text-white truncate" title="${match.equipo_local}">${teamWithFlag(match.equipo_local)}</p>
                     </div>
-                    <div class="flex-shrink-0 bg-surface-700/60 border border-surface-500/25 px-2.5 py-0.5 rounded-full text-[10px] font-black text-gray-400 tracking-wider">
+                    <div class="flex-shrink-0 bg-white/5 border border-white/8 px-2.5 py-1 rounded-lg font-display text-[10px] font-bold text-zinc-500 tracking-widest">
                         VS
                     </div>
                     <div class="flex-1 text-left min-w-0">
@@ -376,22 +341,22 @@
                 <!-- Bet Buttons Grid -->
                 <div class="grid grid-cols-3 gap-2 mt-4">
                     <button onclick="selectBet(${match.id}, '1', this)"
-                        class="bet-btn flex flex-col items-center py-2.5 rounded-xl bg-surface-700 border border-surface-500 hover:border-brand-500 ${pred && pred.pronostico === '1' ? 'active' : ''} ${disabledState}"
+                        class="bet-btn flex flex-col items-center py-3 rounded-xl ${pred && pred.pronostico === '1' ? 'active' : ''} ${disabledState}"
                         ${disabledState}>
-                        <span class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">1</span>
-                        <span class="text-sm font-extrabold text-white mt-0.5">${match.cuota_1.toFixed(2)}</span>
+                        <span class="bet-label text-[9px] text-zinc-500 font-black uppercase tracking-widest">1 · Local</span>
+                        <span class="bet-odds font-display text-base font-bold text-white mt-0.5">${match.cuota_1.toFixed(2)}</span>
                     </button>
                     <button onclick="selectBet(${match.id}, 'X', this)"
-                        class="bet-btn flex flex-col items-center py-2.5 rounded-xl bg-surface-700 border border-surface-500 hover:border-brand-500 ${pred && pred.pronostico === 'X' ? 'active' : ''} ${disabledState}"
+                        class="bet-btn flex flex-col items-center py-3 rounded-xl ${pred && pred.pronostico === 'X' ? 'active' : ''} ${disabledState}"
                         ${disabledState}>
-                        <span class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">X</span>
-                        <span class="text-sm font-extrabold text-white mt-0.5">${match.cuota_x.toFixed(2)}</span>
+                        <span class="bet-label text-[9px] text-zinc-500 font-black uppercase tracking-widest">X · Empate</span>
+                        <span class="bet-odds font-display text-base font-bold text-white mt-0.5">${match.cuota_x.toFixed(2)}</span>
                     </button>
                     <button onclick="selectBet(${match.id}, '2', this)"
-                        class="bet-btn flex flex-col items-center py-2.5 rounded-xl bg-surface-700 border border-surface-500 hover:border-brand-500 ${pred && pred.pronostico === '2' ? 'active' : ''} ${disabledState}"
+                        class="bet-btn flex flex-col items-center py-3 rounded-xl ${pred && pred.pronostico === '2' ? 'active' : ''} ${disabledState}"
                         ${disabledState}>
-                        <span class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">2</span>
-                        <span class="text-sm font-extrabold text-white mt-0.5">${match.cuota_2.toFixed(2)}</span>
+                        <span class="bet-label text-[9px] text-zinc-500 font-black uppercase tracking-widest">2 · Visit.</span>
+                        <span class="bet-odds font-display text-base font-bold text-white mt-0.5">${match.cuota_2.toFixed(2)}</span>
                     </button>
                 </div>
 
@@ -399,7 +364,7 @@
                 ${pred && !started ? `
                 <div class="mt-4 flex justify-center">
                     <button onclick="toggleComodin(${pred.id})"
-                        class="comodin-btn text-xs px-4 py-1.5 rounded-full border ${pred.es_comodin ? 'active border-yellow-500' : 'border-surface-500 text-gray-400 hover:border-yellow-500 hover:text-yellow-400'} transition-all ${enviado ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}"
+                        class="comodin-btn text-xs px-4 py-1.5 rounded-full border ${pred.es_comodin ? 'active border-gold' : 'border-white/10 text-zinc-400 hover:border-gold hover:text-gold'} transition-all ${enviado ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}"
                         ${enviado ? 'disabled' : ''}>
                         🃏 ${pred.es_comodin ? 'Quitar Comodín' : 'Usar Comodín'}
                     </button>
@@ -423,11 +388,11 @@
 
             if (res.ok) {
                 myPredictions[partidoId] = data.pronostico;
-                
+
                 // Disable animations for subsequent interactive renders
                 const container = document.getElementById('matches-container');
                 if (container) container.classList.remove('stagger-children');
-                
+
                 renderMatches();
                 updateComodinStatus();
                 updateProgressBanner();
@@ -456,7 +421,7 @@
                     });
                 }
                 myPredictions[pred.partido_id] = pred;
-                
+
                 // Disable animations for subsequent interactive renders
                 const container = document.getElementById('matches-container');
                 if (container) container.classList.remove('stagger-children');
@@ -482,10 +447,10 @@
         if (comodin) {
             const match = matchesData.find(m => m.id === comodin.partido_id);
             label.textContent = match ? `${match.equipo_local} vs ${match.equipo_visitante}` : 'Asignado';
-            label.className = 'font-semibold text-yellow-400';
+            label.className = 'font-bold text-gold';
         } else {
             label.textContent = 'No asignado';
-            label.className = 'font-semibold text-gray-500';
+            label.className = 'font-bold text-zinc-500';
         }
     }
 
@@ -495,7 +460,7 @@
 
         const hasMatches = matchesData.length > 0;
         const anyStarted = matchesData.some(m => m.ha_comenzado);
-        
+
         // Check if user has locked predictions for this phase (any prediction with enviado == true)
         const isLockedForThisPhase = Object.values(myPredictions).some(p => p.enviado);
         const hasSomePredictions = matchesData.some(m => myPredictions[m.id]);
@@ -507,7 +472,7 @@
             } else if (!anyStarted && hasSomePredictions) {
                 submitSec.classList.remove('hidden');
                 lockedSec.classList.add('hidden');
-                
+
                 // Set button text back to default
                 const btn = document.getElementById('btn-submit-phase');
                 btn.disabled = false;
@@ -550,15 +515,15 @@
             // Incompleto
             icon.textContent = '⚠️';
             title.textContent = 'Pronósticos Incompletos';
-            body.innerHTML = `Te quedan <span class="font-bold text-yellow-400">${total - predictedCount} de ${total} partidos</span> sin pronosticar en esta fase. No deberías enviar la fase incompleta ya que quedará bloqueada y no podrás añadir más pronósticos.`;
-            
+            body.innerHTML = `Te quedan <span class="font-bold text-gold">${total - predictedCount} de ${total} partidos</span> sin pronosticar en esta fase. No deberías enviar la fase incompleta ya que quedará bloqueada y no podrás añadir más pronósticos.`;
+
             // Botón NO llamativo y con color (primary)
-            noBtn.className = 'flex-1 px-4 py-2.5 rounded-xl font-bold bg-brand-500 hover:bg-brand-600 text-white shadow-lg transition-colors';
+            noBtn.className = 'btn-primary flex-1 px-4 py-2.5 rounded-xl text-sm';
             noBtn.textContent = 'No, volver a pronosticar';
             noBtn.onclick = closeSubmitConfirmModal;
 
             // Botón SÍ apagado y gris (secondary)
-            yesBtn.className = 'flex-1 px-4 py-2.5 rounded-xl font-semibold bg-surface-700 hover:bg-surface-600 text-gray-400 hover:text-gray-300 transition-colors text-[10px] sm:text-xs';
+            yesBtn.className = 'btn-ghost flex-1 px-4 py-2.5 rounded-xl font-semibold text-[10px] sm:text-xs';
             yesBtn.textContent = 'Sí, enviar de todas formas';
             yesBtn.onclick = executeSubmitPhase;
         } else {
@@ -568,12 +533,12 @@
             body.innerHTML = `¿Estás seguro de que deseas enviar tus pronósticos para esta fase? Una vez enviados, quedarán bloqueados y no podrás modificarlos.`;
 
             // Botón SÍ llamativo y con color
-            yesBtn.className = 'flex-1 px-4 py-2.5 rounded-xl font-bold bg-brand-500 hover:bg-brand-600 text-white shadow-lg transition-colors order-first sm:order-last';
+            yesBtn.className = 'btn-primary flex-1 px-4 py-2.5 rounded-xl text-sm order-first sm:order-last';
             yesBtn.textContent = '🔒 Sí, enviar y bloquear';
             yesBtn.onclick = executeSubmitPhase;
 
             // Botón NO apagado y gris
-            noBtn.className = 'flex-1 px-4 py-2.5 rounded-xl font-semibold bg-surface-700 hover:bg-surface-600 text-gray-400 hover:text-gray-300 transition-colors';
+            noBtn.className = 'btn-ghost flex-1 px-4 py-2.5 rounded-xl font-semibold text-sm';
             noBtn.textContent = 'Cancelar';
             noBtn.onclick = closeSubmitConfirmModal;
         }
@@ -588,7 +553,7 @@
 
     async function executeSubmitPhase() {
         if (!pendingJornadaToSubmit) return;
-        
+
         const jornadaToSend = pendingJornadaToSubmit;
         closeSubmitConfirmModal();
 
@@ -625,55 +590,55 @@
     function updateProgressBanner() {
         const banner = document.getElementById('progress-banner');
         if (!banner) return;
-        
+
         if (!matchesData.length) {
             banner.classList.add('hidden');
             return;
         }
-        
+
         banner.classList.remove('hidden');
         const total = matchesData.length;
         let predictedCount = 0;
         let comodinLabel = 'No asignado';
         let possiblePoints = 0;
-        
+
         matchesData.forEach(match => {
             const pred = myPredictions[match.id];
             if (pred && pred.pronostico) {
                 predictedCount++;
-                
+
                 // Get the odds for the chosen prediction option
                 let odds = 1.0;
                 if (pred.pronostico === '1') odds = match.cuota_1;
                 else if (pred.pronostico === 'X') odds = match.cuota_x;
                 else if (pred.pronostico === '2') odds = match.cuota_2;
-                
+
                 let points = odds * 10;
                 if (pred.es_comodin) {
                     points *= userMultiplier;
                     comodinLabel = `${teamWithFlag(match.equipo_local)} vs ${teamWithFlag(match.equipo_visitante)}`;
                 }
-                
+
                 possiblePoints += points;
             }
         });
-        
+
         document.getElementById('progress-count').textContent = `${predictedCount}/${total}`;
         document.getElementById('progress-possible-points').textContent = possiblePoints.toFixed(1);
-        
+
         const multEl = document.getElementById('progress-multiplier');
         if (multEl) {
             multEl.textContent = `x${userMultiplier.toFixed(1)}`;
         }
-        
+
         const comodinEl = document.getElementById('progress-comodin');
         comodinEl.textContent = comodinLabel;
         if (comodinLabel !== 'No asignado') {
-            comodinEl.className = 'font-semibold text-yellow-400';
+            comodinEl.className = 'font-bold text-gold';
         } else {
-            comodinEl.className = 'font-semibold text-gray-500';
+            comodinEl.className = 'font-bold text-zinc-500';
         }
-        
+
         const missing = total - predictedCount;
         const missingEl = document.getElementById('progress-missing');
         if (missing > 0) {
@@ -682,7 +647,7 @@
         } else {
             missingEl.classList.add('hidden');
         }
-        
+
         const pct = total > 0 ? (predictedCount / total) * 100 : 0;
         document.getElementById('progress-bar').style.width = `${pct}%`;
     }
@@ -692,26 +657,26 @@
     function updateCountdownBanner() {
         const banner = document.getElementById('countdown-banner');
         if (!banner) return;
-        
+
         if (countdownInterval) {
             clearInterval(countdownInterval);
             countdownInterval = null;
         }
-        
+
         // Find the first match of the current phase that hasn't started yet
         const firstUnstarted = matchesData.find(m => !m.ha_comenzado);
-        
+
         if (!firstUnstarted) {
             banner.classList.add('hidden');
             return;
         }
-        
+
         const targetDate = new Date(firstUnstarted.fecha_partido);
-        
+
         function updateTimer() {
             const now = new Date();
             const diff = targetDate - now;
-            
+
             if (diff <= 0) {
                 banner.classList.add('hidden');
                 clearInterval(countdownInterval);
@@ -719,20 +684,20 @@
                 loadPronosticos();
                 return;
             }
-            
+
             banner.classList.remove('hidden');
-            
+
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            
+
             document.getElementById('cd-days').textContent = `${days}d`;
             document.getElementById('cd-hours').textContent = `${hours}h`;
             document.getElementById('cd-minutes').textContent = `${minutes}m`;
             document.getElementById('cd-seconds').textContent = `${seconds}s`;
         }
-        
+
         updateTimer();
         countdownInterval = setInterval(updateTimer, 1000);
     }
@@ -741,29 +706,29 @@
         const modal = document.getElementById('social-modal');
         const nameLabel = document.getElementById('social-match-name');
         const list = document.getElementById('social-predictions-list');
-        
+
         nameLabel.textContent = matchName;
         list.innerHTML = '<div class="shimmer h-10 rounded-lg"></div>';
         modal.classList.remove('hidden');
-        
+
         try {
             const res = await apiFetch(`/api/pronosticos-partido/${matchId}`);
             const data = await res.json();
-            
+
             if (!res.ok) {
                 list.innerHTML = `<p class="text-xs text-red-400">${data.error || 'Error al cargar'}</p>`;
                 return;
             }
-            
+
             const preds = data.pronosticos || [];
             const match = data.partido;
             const finished = match.finalizado;
-            
+
             if (!preds.length) {
-                list.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Nadie ha pronosticado este partido.</p>';
+                list.innerHTML = '<p class="text-sm text-zinc-500 text-center py-4">Nadie ha pronosticado este partido.</p>';
                 return;
             }
-            
+
             list.innerHTML = preds.map(p => {
                 const color = getUserColor(p.username);
                 const isComodin = p.es_comodin ? '<span class="text-xs">🃏</span>' : '';
@@ -771,18 +736,18 @@
                 let pointsStr = '';
                 if (finished && match.resultado_real) {
                     const won = p.pronostico === match.resultado_real;
-                    pointsStr = won ? `<span class="text-xs font-bold text-brand-400">+${p.puntos_ganados.toFixed(1)} pts</span>` : '<span class="text-xs text-red-400">0 pts</span>';
+                    pointsStr = won ? `<span class="text-xs font-bold text-volt-400">+${p.puntos_ganados.toFixed(1)} pts</span>` : '<span class="text-xs text-red-400">0 pts</span>';
                 }
                 return `
                     <div class="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
                         <div class="flex items-center gap-2 min-w-0">
-                            <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style="background-color: ${color}">
+                            <div class="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style="background-color: ${color}">
                                 ${p.username.charAt(0).toUpperCase()}
                             </div>
-                            <span class="text-sm font-medium text-gray-300 truncate">${p.username} ${isComodin}</span>
+                            <span class="text-sm font-semibold text-zinc-300 truncate">${p.username} ${isComodin}</span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-sm font-bold text-white px-2 py-0.5 rounded-lg bg-surface-700">${resultLabels[p.pronostico]}</span>
+                            <span class="font-display text-sm font-bold text-white px-2.5 py-0.5 rounded-lg bg-ink-700 border border-white/8">${resultLabels[p.pronostico]}</span>
                             ${pointsStr}
                         </div>
                     </div>
@@ -792,7 +757,7 @@
             list.innerHTML = '<p class="text-xs text-red-400">Error de conexión.</p>';
         }
     }
-    
+
     function closeSocialModal() {
         document.getElementById('social-modal').classList.add('hidden');
     }

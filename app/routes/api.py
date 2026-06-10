@@ -270,6 +270,10 @@ def crear_pronostico():
     Body: { partido_id, pronostico ("1"|"X"|"2") }
     """
     user_id = int(get_jwt_identity())
+    claims = get_jwt()
+    if claims.get("username") == "invitado":
+        return jsonify({"error": "Acceso de invitado de solo lectura. No puedes modificar nada."}), 403
+
     data = request.get_json() or {}
 
     partido_id = data.get("partido_id")
@@ -332,6 +336,10 @@ def enviar_pronosticos():
     Body: { "jornada": N }
     """
     user_id = int(get_jwt_identity())
+    claims = get_jwt()
+    if claims.get("username") == "invitado":
+        return jsonify({"error": "Acceso de invitado de solo lectura. No puedes modificar nada."}), 403
+
     data = request.get_json() or {}
     jornada = data.get("jornada")
 
@@ -387,6 +395,9 @@ def toggle_comodin(pred_id: int):
     Solo 1 comodín por jornada por usuario.
     """
     user_id = int(get_jwt_identity())
+    claims = get_jwt()
+    if claims.get("username") == "invitado":
+        return jsonify({"error": "Acceso de invitado de solo lectura. No puedes modificar nada."}), 403
 
     pred = Prediccion.query.get(pred_id)
     if not pred or pred.usuario_id != user_id:

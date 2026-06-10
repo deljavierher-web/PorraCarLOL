@@ -1,0 +1,56 @@
+{# Navegación compartida. Usar: {% set active = 'rankings'|'pronosticos'|'cuadro'|'admin' %}{% include '_nav.html' %} #}
+
+{% set icon_rankings %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M7 13v4"/><path d="M12 9v8"/><path d="M17 5v12"/></svg>{% endset %}
+{% set icon_target %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>{% endset %}
+{% set icon_trophy %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>{% endset %}
+{% set icon_gear %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>{% endset %}
+{% set icon_exit %}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>{% endset %}
+
+<!-- ── Navbar flotante (escritorio + cabecera móvil) ── -->
+<header class="sticky top-0 z-50 px-3 sm:px-6 pt-3 pb-1">
+    <nav class="nav-shell max-w-6xl mx-auto flex items-center justify-between gap-3 pl-4 pr-3 h-14 rounded-2xl">
+        <!-- Logo -->
+        <a href="/dashboard" class="flex items-center gap-2.5 group">
+            <span class="w-8 h-8 rounded-xl bg-gradient-to-br from-volt-400 to-aqua-400 flex items-center justify-center text-base shadow-glow group-hover:scale-105 transition-transform">⚽</span>
+            <span class="font-display font-bold text-[15px] tracking-tight text-white">Porra<span class="gradient-text">CarLOL</span></span>
+        </a>
+
+        <!-- Links escritorio -->
+        <div class="hidden sm:flex items-center gap-1.5">
+            <a href="/dashboard" class="{{ 'nav-link-active' if active == 'rankings' else 'nav-link' }}">{{ icon_rankings }} Rankings</a>
+            <a href="/pronosticos" class="{{ 'nav-link-active' if active == 'pronosticos' else 'nav-link' }}">{{ icon_target }} Pronósticos</a>
+            <a href="/cuadro" class="{{ 'nav-link-active' if active == 'cuadro' else 'nav-link' }}">{{ icon_trophy }} Cuadro</a>
+            <a href="/admin" id="nav-admin-link" class="nav-admin-item hidden {{ 'nav-link-active' if active == 'admin' else 'nav-link' }}">{{ icon_gear }} Admin</a>
+        </div>
+
+        <!-- Usuario -->
+        <div class="flex items-center gap-2">
+            <span id="nav-username" class="nav-username text-xs font-semibold text-zinc-400 hidden sm:inline max-w-[120px] truncate"></span>
+            <button onclick="handleLogout()" title="Cerrar sesión"
+                class="w-9 h-9 rounded-xl flex items-center justify-center text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                <span class="w-[17px] h-[17px] block">{{ icon_exit }}</span>
+            </button>
+        </div>
+    </nav>
+</header>
+
+<!-- ── Barra inferior móvil ── -->
+<nav class="bottom-nav sm:hidden">
+    <a href="/dashboard" class="bnav-item {{ 'active' if active == 'rankings' }}">{{ icon_rankings }}<span>Rankings</span></a>
+    <a href="/pronosticos" class="bnav-item {{ 'active' if active == 'pronosticos' }}">{{ icon_target }}<span>Pronósticos</span></a>
+    <a href="/cuadro" class="bnav-item {{ 'active' if active == 'cuadro' }}">{{ icon_trophy }}<span>Cuadro</span></a>
+    <a href="/admin" class="bnav-item nav-admin-item hidden {{ 'active' if active == 'admin' }}">{{ icon_gear }}<span>Admin</span></a>
+</nav>
+
+<script>
+    // Rellena nombre de usuario y muestra enlaces de admin (desktop + móvil)
+    (function () {
+        try {
+            const u = JSON.parse(localStorage.getItem('porra_user') || '{}');
+            if (u.es_administrador) {
+                document.querySelectorAll('.nav-admin-item').forEach(el => el.classList.remove('hidden'));
+            }
+            document.querySelectorAll('.nav-username').forEach(el => el.textContent = u.username || '');
+        } catch (e) { /* sin sesión */ }
+    })();
+</script>

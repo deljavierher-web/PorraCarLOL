@@ -17,8 +17,11 @@ class Config:
     SECRET_KEY = os.environ.get("FLASK_SECRET_KEY", "dev-secret-key-change-me")
     DEBUG = os.environ.get("FLASK_DEBUG", "false").lower() in ("true", "1", "yes")
 
-    # SQLAlchemy
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "sqlite:///porra.db")
+    # SQLAlchemy — corrige postgres:// → postgresql:// (requerido por SQLAlchemy 1.4+)
+    _db_url = os.environ.get("DATABASE_URL", "sqlite:///porra.db")
+    if _db_url.startswith("postgres://"):
+        _db_url = _db_url.replace("postgres://", "postgresql://", 1)
+    SQLALCHEMY_DATABASE_URI = _db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # JWT

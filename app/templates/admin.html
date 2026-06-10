@@ -2,69 +2,50 @@
 {% block title %}Panel Admin{% endblock %}
 
 {% block body %}
-<!-- Navbar -->
-<nav class="glass-strong sticky top-0 z-50 border-b border-white/5">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
-        <div class="flex items-center justify-between h-16">
-            <a href="/dashboard" class="flex items-center gap-2">
-                <span class="text-2xl">⚽</span>
-                <span class="text-lg font-extrabold gradient-text hidden sm:inline">PorraCarLOL</span>
-            </a>
-            <div class="flex items-center gap-1 sm:gap-2">
-                <a href="/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">📊 Rankings</a>
-                <a href="/pronosticos" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">🎯 Pronósticos</a>
-                <a href="/cuadro" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">🏆 Cuadro</a>
-                <a href="/admin" class="px-3 py-2 rounded-lg text-sm font-medium text-brand-400 bg-brand-500/10 transition-colors">⚙️ Admin</a>
-            </div>
-            <div class="flex items-center gap-3">
-                <span id="nav-username" class="text-sm text-gray-400 hidden sm:inline"></span>
-                <button onclick="handleLogout()" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors">Salir</button>
-            </div>
-        </div>
-    </div>
-</nav>
+{% set active = 'admin' %}
+{% include '_nav.html' %}
 
-<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 pb-28 sm:pb-14">
+
     <!-- Header -->
     <div class="mb-8 animate-slideUp">
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-white mb-2">
-            Panel de <span class="gradient-text">Administración</span>
+        <p class="eyebrow mb-2">Zona de control</p>
+        <h1 class="font-display text-3xl sm:text-5xl font-bold tracking-tight text-white">
+            Panel de <span class="gradient-text">administración</span>
         </h1>
-        <p class="text-gray-400">Gestiona partidos, sincroniza APIs y controla el torneo.</p>
+        <p class="text-zinc-500 text-sm mt-3">Gestiona partidos, sincroniza APIs y controla el torneo.</p>
     </div>
 
     <!-- Tabs -->
-    <div class="flex gap-4 mb-6 border-b border-surface-600 pb-0 animate-slideUp" style="animation-delay: 0.05s">
-        <button id="admin-tab-users" onclick="switchAdminTab('users')"
-            class="tab-btn active pb-3 text-sm font-semibold text-brand-400">
-            👥 Gestión de Usuarios
+    <div class="seg mb-7 animate-slideUp" style="animation-delay: 0.05s">
+        <button id="admin-tab-users" onclick="switchAdminTab('users')" class="seg-btn seg-active">
+            👥 Usuarios
         </button>
-        <button id="admin-tab-matches" onclick="switchAdminTab('matches')"
-            class="tab-btn pb-3 text-sm font-semibold text-gray-500 hover:text-gray-300">
+        <button id="admin-tab-matches" onclick="switchAdminTab('matches')" class="seg-btn">
             📅 Partidos y Cuotas
         </button>
     </div>
 
     <!-- Section Users (Visible by Default) -->
-    <div id="section-users" class="space-y-8 animate-fadeIn">
+    <div id="section-users" class="space-y-6 animate-fadeIn">
         <!-- Add User Section -->
-        <div class="glass rounded-2xl p-6">
-            <h3 class="text-lg font-bold text-white mb-2">Crear Nuevo Jugador</h3>
-            <p class="text-xs text-gray-400 mb-4">Ingresa el nombre y una contraseña temporal para el nuevo participante del grupo.</p>
+        <div class="card p-6">
+            <h3 class="font-display text-lg font-bold text-white mb-1">Crear nuevo jugador</h3>
+            <p class="text-xs text-zinc-500 mb-5">Ingresa el nombre y una contraseña temporal para el nuevo participante del grupo.</p>
             <form id="create-user-form" onsubmit="adminCreateUser(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 mb-1">Nombre de Usuario</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Nombre de Usuario</label>
                     <input type="text" id="new-user-username" required placeholder="Ej: Carlos"
-                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                        class="w-full px-3.5 py-2.5 bg-ink-800 border border-white/10 rounded-xl text-white text-sm placeholder-zinc-600">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 mb-1">Contraseña</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Contraseña</label>
                     <input type="password" id="new-user-password" required placeholder="••••••••"
-                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                        class="w-full px-3.5 py-2.5 bg-ink-800 border border-white/10 rounded-xl text-white text-sm placeholder-zinc-600">
                 </div>
                 <div>
                     <button type="submit" id="btn-create-user"
-                        class="w-full py-2.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-brand-500/20 transition-all text-sm">
+                        class="btn-primary w-full py-2.5 rounded-xl text-sm">
                         Crear Cuenta
                     </button>
                 </div>
@@ -72,9 +53,9 @@
         </div>
 
         <!-- Users Section -->
-        <div class="glass rounded-2xl overflow-hidden">
+        <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b border-white/5">
-                <h3 class="text-lg font-bold text-white">Usuarios Registrados</h3>
+                <h3 class="font-display text-lg font-bold text-white">Usuarios registrados</h3>
             </div>
             <div id="admin-users-list" class="divide-y divide-white/5">
                 <div class="shimmer h-12 mx-4 my-2"></div>
@@ -83,83 +64,83 @@
     </div>
 
     <!-- Section Matches & Sync (Hidden by Default) -->
-    <div id="section-matches" class="space-y-8 hidden animate-fadeIn">
+    <div id="section-matches" class="space-y-6 hidden animate-fadeIn">
         <!-- Quick Actions -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button onclick="syncCuotas()" id="btn-sync-cuotas"
-                class="glass rounded-xl p-4 text-left hover:bg-brand-500/10 transition-colors group">
+                class="card p-4 text-left hover:!border-volt-400/30 transition-all group">
                 <div class="flex items-center gap-3">
-                    <span class="text-2xl">📡</span>
+                    <span class="w-10 h-10 rounded-xl bg-volt-400/10 border border-volt-400/20 flex items-center justify-center text-xl">📡</span>
                     <div>
-                        <p class="text-sm font-semibold text-white group-hover:text-brand-400 transition-colors">Sync Cuotas</p>
-                        <p class="text-xs text-gray-500">The Odds API</p>
+                        <p class="text-sm font-bold text-white group-hover:text-volt-400 transition-colors">Sync Cuotas</p>
+                        <p class="text-xs text-zinc-500">The Odds API</p>
                     </div>
                 </div>
             </button>
             <button onclick="syncResultados()" id="btn-sync-results"
-                class="glass rounded-xl p-4 text-left hover:bg-brand-500/10 transition-colors group">
+                class="card p-4 text-left hover:!border-aqua-400/30 transition-all group">
                 <div class="flex items-center gap-3">
-                    <span class="text-2xl">⚽</span>
+                    <span class="w-10 h-10 rounded-xl bg-aqua-400/10 border border-aqua-400/20 flex items-center justify-center text-xl">⚽</span>
                     <div>
-                        <p class="text-sm font-semibold text-white group-hover:text-brand-400 transition-colors">Sync Resultados</p>
-                        <p class="text-xs text-gray-500">API-Football</p>
+                        <p class="text-sm font-bold text-white group-hover:text-aqua-300 transition-colors">Sync Resultados</p>
+                        <p class="text-xs text-zinc-500">API-Football</p>
                     </div>
                 </div>
             </button>
             <button onclick="showAddMatch()" id="btn-add-match"
-                class="glass rounded-xl p-4 text-left hover:bg-brand-500/10 transition-colors group">
+                class="card p-4 text-left hover:!border-gold/30 transition-all group">
                 <div class="flex items-center gap-3">
-                    <span class="text-2xl">➕</span>
+                    <span class="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center text-xl">➕</span>
                     <div>
-                        <p class="text-sm font-semibold text-white group-hover:text-brand-400 transition-colors">Añadir Partido</p>
-                        <p class="text-xs text-gray-500">Crear manualmente</p>
+                        <p class="text-sm font-bold text-white group-hover:text-gold transition-colors">Añadir Partido</p>
+                        <p class="text-xs text-zinc-500">Crear manualmente</p>
                     </div>
                 </div>
             </button>
         </div>
 
         <!-- Add Match Modal -->
-        <div id="add-match-modal" class="glass rounded-2xl p-6 hidden animate-slideDown">
-            <h3 class="text-lg font-bold text-white mb-4">Crear Partido Manual</h3>
+        <div id="add-match-modal" class="card p-6 hidden animate-slideDown">
+            <h3 class="font-display text-lg font-bold text-white mb-5">Crear partido manual</h3>
             <form id="add-match-form" onsubmit="createMatch(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 mb-1">Fase (Número)</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Fase (Número)</label>
                     <input type="number" id="new-jornada" required min="1"
-                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                        class="w-full px-3.5 py-2.5 bg-ink-800 border border-white/10 rounded-xl text-white text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 mb-1">Fecha y Hora</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Fecha y Hora</label>
                     <input type="datetime-local" id="new-fecha" required
-                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                        class="w-full px-3.5 py-2.5 bg-ink-800 border border-white/10 rounded-xl text-white text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 mb-1">Equipo Local</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Equipo Local</label>
                     <input type="text" id="new-local" required placeholder="Ej: Real Madrid"
-                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                        class="w-full px-3.5 py-2.5 bg-ink-800 border border-white/10 rounded-xl text-white text-sm placeholder-zinc-600">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 mb-1">Equipo Visitante</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Equipo Visitante</label>
                     <input type="text" id="new-visitante" required placeholder="Ej: Barcelona"
-                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                        class="w-full px-3.5 py-2.5 bg-ink-800 border border-white/10 rounded-xl text-white text-sm placeholder-zinc-600">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 mb-1">Cuota 1</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Cuota 1</label>
                     <input type="number" id="new-cuota1" step="0.01" value="2.00"
-                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                        class="w-full px-3.5 py-2.5 bg-ink-800 border border-white/10 rounded-xl text-white text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 mb-1">Cuota X</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Cuota X</label>
                     <input type="number" id="new-cuotax" step="0.01" value="3.00"
-                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                        class="w-full px-3.5 py-2.5 bg-ink-800 border border-white/10 rounded-xl text-white text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-400 mb-1">Cuota 2</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">Cuota 2</label>
                     <input type="number" id="new-cuota2" step="0.01" value="2.50"
-                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                        class="w-full px-3.5 py-2.5 bg-ink-800 border border-white/10 rounded-xl text-white text-sm">
                 </div>
                 <div class="flex items-end">
                     <button type="submit"
-                        class="w-full py-2.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-brand-500/20 transition-all text-sm">
+                        class="btn-primary w-full py-2.5 rounded-xl text-sm">
                         Crear Partido
                     </button>
                 </div>
@@ -167,16 +148,16 @@
         </div>
 
         <!-- Matches List -->
-        <div class="glass rounded-2xl overflow-hidden">
+        <div class="card overflow-hidden">
             <div class="px-6 py-4 border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                    <h3 class="text-lg font-bold text-white">Partidos del Torneo</h3>
-                    <p class="text-xs text-gray-500 mt-1">Sirve para ver los partidos de cada fase, actualizarlos o finalizarlos manualmente introduciendo el resultado ganador (1, X, 2) para evaluar los puntos de los jugadores.</p>
+                    <h3 class="font-display text-lg font-bold text-white">Partidos del torneo</h3>
+                    <p class="text-xs text-zinc-500 mt-1">Consulta los partidos de cada fase, actualízalos o finalízalos manualmente introduciendo el resultado ganador (1, X, 2) para evaluar los puntos.</p>
                 </div>
-                <div class="flex items-center gap-3">
-                    <label class="text-xs text-gray-400">Fase:</label>
+                <div class="flex items-center gap-3 flex-shrink-0">
+                    <label class="text-xs font-bold text-zinc-500">Fase:</label>
                     <select id="admin-jornada-filter" onchange="loadAdminMatches()"
-                        class="bg-surface-700 border border-surface-500 text-white px-3 py-1.5 rounded-lg text-xs">
+                        class="bg-ink-800 border border-white/10 text-white px-3 py-2 rounded-lg text-xs font-semibold">
                         <option value="">Todas</option>
                     </select>
                 </div>
@@ -188,31 +169,31 @@
             </div>
 
             <div id="admin-matches-empty" class="hidden py-12 text-center">
-                <p class="text-gray-500 text-sm">No hay partidos.</p>
+                <p class="text-zinc-500 text-sm">No hay partidos.</p>
             </div>
         </div>
     </div>
 </main>
 
 <!-- Finalize Modal -->
-<div id="finalize-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
-    <div class="glass-strong rounded-2xl p-6 w-full max-w-sm mx-4 animate-bounceIn">
-        <h3 class="text-lg font-bold text-white mb-4">Finalizar Partido</h3>
-        <p id="finalize-match-name" class="text-sm text-gray-400 mb-4"></p>
+<div id="finalize-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="glass-strong rounded-2xl p-6 w-full max-w-sm animate-bounceIn">
+        <h3 class="font-display text-lg font-bold text-white mb-2">Finalizar partido</h3>
+        <p id="finalize-match-name" class="text-sm text-zinc-400 mb-5"></p>
         <input type="hidden" id="finalize-match-id">
-        <div class="flex gap-3 mb-4">
+        <div class="flex gap-3 mb-5">
             <button onclick="selectFinalResult('1')" id="fin-btn-1"
-                class="flex-1 py-3 rounded-xl bg-surface-700 border border-surface-500 text-white font-bold hover:border-brand-500 transition-colors">1</button>
+                class="bet-btn flex-1 py-3 rounded-xl text-white font-display font-bold">1</button>
             <button onclick="selectFinalResult('X')" id="fin-btn-X"
-                class="flex-1 py-3 rounded-xl bg-surface-700 border border-surface-500 text-white font-bold hover:border-brand-500 transition-colors">X</button>
+                class="bet-btn flex-1 py-3 rounded-xl text-white font-display font-bold">X</button>
             <button onclick="selectFinalResult('2')" id="fin-btn-2"
-                class="flex-1 py-3 rounded-xl bg-surface-700 border border-surface-500 text-white font-bold hover:border-brand-500 transition-colors">2</button>
+                class="bet-btn flex-1 py-3 rounded-xl text-white font-display font-bold">2</button>
         </div>
         <div class="flex gap-3">
             <button onclick="closeFinalizeModal()"
-                class="flex-1 py-2.5 rounded-xl border border-surface-500 text-gray-400 hover:text-white transition-colors text-sm">Cancelar</button>
+                class="btn-ghost flex-1 py-2.5 rounded-xl text-sm font-semibold">Cancelar</button>
             <button onclick="confirmFinalize()" id="btn-confirm-finalize"
-                class="flex-1 py-2.5 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-500 transition-colors text-sm disabled:opacity-50" disabled>Confirmar</button>
+                class="btn-primary flex-1 py-2.5 rounded-xl text-sm disabled:opacity-50" disabled>Confirmar</button>
         </div>
     </div>
 </div>
@@ -226,7 +207,6 @@
         showToast('error', 'No tienes permisos de administrador.');
         setTimeout(() => window.location.href = '/dashboard', 1000);
     }
-    document.getElementById('nav-username').textContent = user.username || '';
 
     let selectedFinalResult = null;
 
@@ -277,20 +257,20 @@
                 const fecha = new Date(m.fecha_partido);
                 const fechaStr = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
                 const horaStr = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-                const status = m.finalizado ? `<span class="text-xs bg-gray-600 text-gray-300 px-2 py-0.5 rounded-full">Fin: ${m.resultado_real}</span>` :
-                    m.ha_comenzado ? '<span class="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full">En Juego</span>' :
-                    '<span class="text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full">Pendiente</span>';
+                const status = m.finalizado ? `<span class="chip chip-done">Fin: ${m.resultado_real}</span>` :
+                    m.ha_comenzado ? '<span class="chip chip-live">En Juego</span>' :
+                    '<span class="chip chip-pending">Pendiente</span>';
 
                 return `
-                <div class="flex items-center px-4 sm:px-6 py-3 gap-2 sm:gap-4 hover:bg-white/[0.02] transition-colors">
-                    <span class="text-xs text-gray-500 w-8 text-center font-mono">F${m.jornada}</span>
+                <div class="flex items-center px-4 sm:px-6 py-3.5 gap-2 sm:gap-4 hover:bg-white/[0.02] transition-colors">
+                    <span class="rank-badge flex-shrink-0">F${m.jornada}</span>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-white truncate">${teamWithFlag(m.equipo_local)} vs ${teamWithFlag(m.equipo_visitante)}</p>
-                        <p class="text-xs text-gray-500">${fechaStr} ${horaStr} · ${m.num_predicciones || 0} pronósticos · Cuotas: ${m.cuota_1}/${m.cuota_x}/${m.cuota_2}</p>
+                        <p class="text-sm font-bold text-white truncate">${teamWithFlag(m.equipo_local)} vs ${teamWithFlag(m.equipo_visitante)}</p>
+                        <p class="text-xs text-zinc-500 mt-0.5">${fechaStr} ${horaStr} · ${m.num_predicciones || 0} pronósticos · Cuotas: ${m.cuota_1}/${m.cuota_x}/${m.cuota_2}</p>
                     </div>
                     ${status}
-                    ${!m.finalizado ? `<button onclick="showFinalizeModal(${m.id}, '${m.equipo_local} vs ${m.equipo_visitante}')" class="text-xs px-3 py-1.5 rounded-lg border border-surface-500 text-gray-400 hover:text-yellow-400 hover:border-yellow-500 transition-colors">Finalizar</button>` : ''}
-                    <button onclick="deleteMatch(${m.id})" class="text-xs px-2 py-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors">🗑️</button>
+                    ${!m.finalizado ? `<button onclick="showFinalizeModal(${m.id}, '${m.equipo_local} vs ${m.equipo_visitante}')" class="btn-ghost text-xs px-3 py-1.5 rounded-lg hover:!text-gold flex-shrink-0">Finalizar</button>` : ''}
+                    <button onclick="deleteMatch(${m.id})" class="text-xs px-2 py-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors flex-shrink-0">🗑️</button>
                 </div>`;
             }).join('');
         } catch(e) {
@@ -307,13 +287,13 @@
             const list = document.getElementById('admin-users-list');
 
             list.innerHTML = (data.usuarios || []).map(u => `
-                <div class="flex items-center px-6 py-3 gap-4 hover:bg-white/[0.02]">
-                    <span class="text-sm font-medium text-white">${u.username}</span>
-                    ${u.es_administrador ? '<span class="text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full">Admin</span>' : ''}
-                    <span class="text-xs text-gray-500 ml-auto">${new Date(u.created_at).toLocaleDateString('es-ES')}</span>
-                    ${!u.es_administrador ? `<button onclick="deleteUser(${u.id}, '${u.username}')" class="text-xs px-2 py-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors">🗑️</button>` : ''}
+                <div class="flex items-center px-6 py-3.5 gap-3 hover:bg-white/[0.02] transition-colors">
+                    <span class="text-sm font-bold text-white">${u.username}</span>
+                    ${u.es_administrador ? '<span class="chip chip-pending">Admin</span>' : ''}
+                    <span class="text-xs text-zinc-600 ml-auto">${new Date(u.created_at).toLocaleDateString('es-ES')}</span>
+                    ${!u.es_administrador ? `<button onclick="deleteUser(${u.id}, '${u.username}')" class="text-xs px-2 py-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors">🗑️</button>` : ''}
                 </div>
-            `).join('') || '<p class="text-gray-500 text-sm p-6">No hay usuarios.</p>';
+            `).join('') || '<p class="text-zinc-500 text-sm p-6">No hay usuarios.</p>';
         } catch(e) { console.error(e); }
     }
 
@@ -448,8 +428,7 @@
         document.getElementById('finalize-modal').classList.remove('hidden');
         selectedFinalResult = null;
         ['1', 'X', '2'].forEach(r => {
-            document.getElementById(`fin-btn-${r}`).classList.remove('bg-brand-600', 'border-brand-500');
-            document.getElementById(`fin-btn-${r}`).classList.add('bg-surface-700', 'border-surface-500');
+            document.getElementById(`fin-btn-${r}`).classList.remove('active');
         });
         document.getElementById('btn-confirm-finalize').disabled = true;
     }
@@ -463,11 +442,9 @@
         ['1', 'X', '2'].forEach(x => {
             const btn = document.getElementById(`fin-btn-${x}`);
             if (x === r) {
-                btn.classList.add('bg-brand-600', 'border-brand-500');
-                btn.classList.remove('bg-surface-700', 'border-surface-500');
+                btn.classList.add('active');
             } else {
-                btn.classList.remove('bg-brand-600', 'border-brand-500');
-                btn.classList.add('bg-surface-700', 'border-surface-500');
+                btn.classList.remove('active');
             }
         });
         document.getElementById('btn-confirm-finalize').disabled = false;
@@ -500,22 +477,18 @@
         const sectionMatches = document.getElementById('section-matches');
 
         if (tab === 'users') {
-            tabUsers.classList.add('active', 'text-brand-400');
-            tabUsers.classList.remove('text-gray-500');
-            tabMatches.classList.remove('active', 'text-brand-400');
-            tabMatches.classList.add('text-gray-500');
-            
+            tabUsers.classList.add('seg-active');
+            tabMatches.classList.remove('seg-active');
+
             sectionUsers.classList.remove('hidden');
             sectionMatches.classList.add('hidden');
         } else {
-            tabMatches.classList.add('active', 'text-brand-400');
-            tabMatches.classList.remove('text-gray-500');
-            tabUsers.classList.remove('active', 'text-brand-400');
-            tabUsers.classList.add('text-gray-500');
-            
+            tabMatches.classList.add('seg-active');
+            tabUsers.classList.remove('seg-active');
+
             sectionMatches.classList.remove('hidden');
             sectionUsers.classList.add('hidden');
-            
+
             loadAdminMatches();
         }
     }
