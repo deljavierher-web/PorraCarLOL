@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PorraCarLOL — Pronosticador de Torneo entre amigos. Compite prediciendo resultados de fútbol.">
+    <title>{% block title %}PorraCarLOL{% endblock %} — Porra del Torneo</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eefbf4',
+                            100: '#d6f5e3',
+                            200: '#b0eacb',
+                            300: '#7cdaad',
+                            400: '#45c289',
+                            500: '#22a86e',
+                            600: '#158858',
+                            700: '#116d49',
+                            800: '#10563b',
+                            900: '#0e4732',
+                            950: '#06281c',
+                        },
+                        surface: {
+                            900: '#0b0f19',
+                            800: '#0f1629',
+                            700: '#141c33',
+                            600: '#1a2542',
+                            500: '#243056',
+                        },
+                        gold: '#fbbf24',
+                        silver: '#9ca3af',
+                        bronze: '#d97706',
+                    },
+                },
+            },
+        }
+    </script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="bg-surface-900 text-gray-100 font-sans min-h-screen antialiased">
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2"></div>
+
+    {% block body %}{% endblock %}
+
+    <!-- App JS -->
+    <script src="/static/js/app.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

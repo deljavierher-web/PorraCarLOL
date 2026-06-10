@@ -1,0 +1,523 @@
+{% extends "base.html" %}
+{% block title %}Panel Admin{% endblock %}
+
+{% block body %}
+<!-- Navbar -->
+<nav class="glass-strong sticky top-0 z-50 border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="flex items-center justify-between h-16">
+            <a href="/dashboard" class="flex items-center gap-2">
+                <span class="text-2xl">⚽</span>
+                <span class="text-lg font-extrabold gradient-text hidden sm:inline">PorraCarLOL</span>
+            </a>
+            <div class="flex items-center gap-1 sm:gap-2">
+                <a href="/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">📊 Rankings</a>
+                <a href="/pronosticos" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">🎯 Pronósticos</a>
+                <a href="/cuadro" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-colors">🏆 Cuadro</a>
+                <a href="/admin" class="px-3 py-2 rounded-lg text-sm font-medium text-brand-400 bg-brand-500/10 transition-colors">⚙️ Admin</a>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="nav-username" class="text-sm text-gray-400 hidden sm:inline"></span>
+                <button onclick="handleLogout()" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors">Salir</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <!-- Header -->
+    <div class="mb-8 animate-slideUp">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-white mb-2">
+            Panel de <span class="gradient-text">Administración</span>
+        </h1>
+        <p class="text-gray-400">Gestiona partidos, sincroniza APIs y controla el torneo.</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-4 mb-6 border-b border-surface-600 pb-0 animate-slideUp" style="animation-delay: 0.05s">
+        <button id="admin-tab-users" onclick="switchAdminTab('users')"
+            class="tab-btn active pb-3 text-sm font-semibold text-brand-400">
+            👥 Gestión de Usuarios
+        </button>
+        <button id="admin-tab-matches" onclick="switchAdminTab('matches')"
+            class="tab-btn pb-3 text-sm font-semibold text-gray-500 hover:text-gray-300">
+            📅 Partidos y Cuotas
+        </button>
+    </div>
+
+    <!-- Section Users (Visible by Default) -->
+    <div id="section-users" class="space-y-8 animate-fadeIn">
+        <!-- Add User Section -->
+        <div class="glass rounded-2xl p-6">
+            <h3 class="text-lg font-bold text-white mb-2">Crear Nuevo Jugador</h3>
+            <p class="text-xs text-gray-400 mb-4">Ingresa el nombre y una contraseña temporal para el nuevo participante del grupo.</p>
+            <form id="create-user-form" onsubmit="adminCreateUser(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Nombre de Usuario</label>
+                    <input type="text" id="new-user-username" required placeholder="Ej: Carlos"
+                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Contraseña</label>
+                    <input type="password" id="new-user-password" required placeholder="••••••••"
+                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <button type="submit" id="btn-create-user"
+                        class="w-full py-2.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-brand-500/20 transition-all text-sm">
+                        Crear Cuenta
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Users Section -->
+        <div class="glass rounded-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-white/5">
+                <h3 class="text-lg font-bold text-white">Usuarios Registrados</h3>
+            </div>
+            <div id="admin-users-list" class="divide-y divide-white/5">
+                <div class="shimmer h-12 mx-4 my-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Matches & Sync (Hidden by Default) -->
+    <div id="section-matches" class="space-y-8 hidden animate-fadeIn">
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <button onclick="syncCuotas()" id="btn-sync-cuotas"
+                class="glass rounded-xl p-4 text-left hover:bg-brand-500/10 transition-colors group">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">📡</span>
+                    <div>
+                        <p class="text-sm font-semibold text-white group-hover:text-brand-400 transition-colors">Sync Cuotas</p>
+                        <p class="text-xs text-gray-500">The Odds API</p>
+                    </div>
+                </div>
+            </button>
+            <button onclick="syncResultados()" id="btn-sync-results"
+                class="glass rounded-xl p-4 text-left hover:bg-brand-500/10 transition-colors group">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">⚽</span>
+                    <div>
+                        <p class="text-sm font-semibold text-white group-hover:text-brand-400 transition-colors">Sync Resultados</p>
+                        <p class="text-xs text-gray-500">API-Football</p>
+                    </div>
+                </div>
+            </button>
+            <button onclick="showAddMatch()" id="btn-add-match"
+                class="glass rounded-xl p-4 text-left hover:bg-brand-500/10 transition-colors group">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">➕</span>
+                    <div>
+                        <p class="text-sm font-semibold text-white group-hover:text-brand-400 transition-colors">Añadir Partido</p>
+                        <p class="text-xs text-gray-500">Crear manualmente</p>
+                    </div>
+                </div>
+            </button>
+        </div>
+
+        <!-- Add Match Modal -->
+        <div id="add-match-modal" class="glass rounded-2xl p-6 hidden animate-slideDown">
+            <h3 class="text-lg font-bold text-white mb-4">Crear Partido Manual</h3>
+            <form id="add-match-form" onsubmit="createMatch(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Fase (Número)</label>
+                    <input type="number" id="new-jornada" required min="1"
+                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Fecha y Hora</label>
+                    <input type="datetime-local" id="new-fecha" required
+                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Equipo Local</label>
+                    <input type="text" id="new-local" required placeholder="Ej: Real Madrid"
+                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Equipo Visitante</label>
+                    <input type="text" id="new-visitante" required placeholder="Ej: Barcelona"
+                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Cuota 1</label>
+                    <input type="number" id="new-cuota1" step="0.01" value="2.00"
+                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Cuota X</label>
+                    <input type="number" id="new-cuotax" step="0.01" value="3.00"
+                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Cuota 2</label>
+                    <input type="number" id="new-cuota2" step="0.01" value="2.50"
+                        class="w-full px-3 py-2 bg-surface-800 border border-surface-500 rounded-xl text-white text-sm">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit"
+                        class="w-full py-2.5 bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-brand-500/20 transition-all text-sm">
+                        Crear Partido
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Matches List -->
+        <div class="glass rounded-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h3 class="text-lg font-bold text-white">Partidos del Torneo</h3>
+                    <p class="text-xs text-gray-500 mt-1">Sirve para ver los partidos de cada fase, actualizarlos o finalizarlos manualmente introduciendo el resultado ganador (1, X, 2) para evaluar los puntos de los jugadores.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <label class="text-xs text-gray-400">Fase:</label>
+                    <select id="admin-jornada-filter" onchange="loadAdminMatches()"
+                        class="bg-surface-700 border border-surface-500 text-white px-3 py-1.5 rounded-lg text-xs">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="admin-matches-list" class="divide-y divide-white/5">
+                <div class="shimmer h-16 mx-4 my-2"></div>
+                <div class="shimmer h-16 mx-4 my-2"></div>
+            </div>
+
+            <div id="admin-matches-empty" class="hidden py-12 text-center">
+                <p class="text-gray-500 text-sm">No hay partidos.</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Finalize Modal -->
+<div id="finalize-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div class="glass-strong rounded-2xl p-6 w-full max-w-sm mx-4 animate-bounceIn">
+        <h3 class="text-lg font-bold text-white mb-4">Finalizar Partido</h3>
+        <p id="finalize-match-name" class="text-sm text-gray-400 mb-4"></p>
+        <input type="hidden" id="finalize-match-id">
+        <div class="flex gap-3 mb-4">
+            <button onclick="selectFinalResult('1')" id="fin-btn-1"
+                class="flex-1 py-3 rounded-xl bg-surface-700 border border-surface-500 text-white font-bold hover:border-brand-500 transition-colors">1</button>
+            <button onclick="selectFinalResult('X')" id="fin-btn-X"
+                class="flex-1 py-3 rounded-xl bg-surface-700 border border-surface-500 text-white font-bold hover:border-brand-500 transition-colors">X</button>
+            <button onclick="selectFinalResult('2')" id="fin-btn-2"
+                class="flex-1 py-3 rounded-xl bg-surface-700 border border-surface-500 text-white font-bold hover:border-brand-500 transition-colors">2</button>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="closeFinalizeModal()"
+                class="flex-1 py-2.5 rounded-xl border border-surface-500 text-gray-400 hover:text-white transition-colors text-sm">Cancelar</button>
+            <button onclick="confirmFinalize()" id="btn-confirm-finalize"
+                class="flex-1 py-2.5 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-500 transition-colors text-sm disabled:opacity-50" disabled>Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── Auth guard ──
+    const token = localStorage.getItem('porra_token');
+    const user = JSON.parse(localStorage.getItem('porra_user') || '{}');
+    if (!token) window.location.href = '/';
+    if (!user.es_administrador) {
+        showToast('error', 'No tienes permisos de administrador.');
+        setTimeout(() => window.location.href = '/dashboard', 1000);
+    }
+    document.getElementById('nav-username').textContent = user.username || '';
+
+    let selectedFinalResult = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAdminMatches();
+        loadAdminUsers();
+        loadAdminJornadas();
+    });
+
+    // ── Load Jornadas for filter ──
+    async function loadAdminJornadas() {
+        try {
+            const res = await apiFetch('/api/jornadas');
+            const data = await res.json();
+            const select = document.getElementById('admin-jornada-filter');
+            (data.jornadas || []).forEach(j => {
+                const opt = document.createElement('option');
+                opt.value = j.jornada;
+                opt.textContent = `Fase ${j.jornada}`;
+                select.appendChild(opt);
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    // ── Load Matches ──
+    async function loadAdminMatches() {
+        const jornada = document.getElementById('admin-jornada-filter').value;
+        const list = document.getElementById('admin-matches-list');
+        const empty = document.getElementById('admin-matches-empty');
+
+        try {
+            const res = await apiFetch('/api/admin/partidos');
+            const data = await res.json();
+            let matches = data.partidos || [];
+
+            if (jornada) {
+                matches = matches.filter(m => m.jornada === parseInt(jornada));
+            }
+
+            if (!matches.length) {
+                list.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            list.innerHTML = matches.map(m => {
+                const fecha = new Date(m.fecha_partido);
+                const fechaStr = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+                const horaStr = fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                const status = m.finalizado ? `<span class="text-xs bg-gray-600 text-gray-300 px-2 py-0.5 rounded-full">Fin: ${m.resultado_real}</span>` :
+                    m.ha_comenzado ? '<span class="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full">En Juego</span>' :
+                    '<span class="text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full">Pendiente</span>';
+
+                return `
+                <div class="flex items-center px-4 sm:px-6 py-3 gap-2 sm:gap-4 hover:bg-white/[0.02] transition-colors">
+                    <span class="text-xs text-gray-500 w-8 text-center font-mono">F${m.jornada}</span>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white truncate">${teamWithFlag(m.equipo_local)} vs ${teamWithFlag(m.equipo_visitante)}</p>
+                        <p class="text-xs text-gray-500">${fechaStr} ${horaStr} · ${m.num_predicciones || 0} pronósticos · Cuotas: ${m.cuota_1}/${m.cuota_x}/${m.cuota_2}</p>
+                    </div>
+                    ${status}
+                    ${!m.finalizado ? `<button onclick="showFinalizeModal(${m.id}, '${m.equipo_local} vs ${m.equipo_visitante}')" class="text-xs px-3 py-1.5 rounded-lg border border-surface-500 text-gray-400 hover:text-yellow-400 hover:border-yellow-500 transition-colors">Finalizar</button>` : ''}
+                    <button onclick="deleteMatch(${m.id})" class="text-xs px-2 py-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors">🗑️</button>
+                </div>`;
+            }).join('');
+        } catch(e) {
+            console.error(e);
+            showToast('error', 'Error al cargar partidos.');
+        }
+    }
+
+    // ── Load Users ──
+    async function loadAdminUsers() {
+        try {
+            const res = await apiFetch('/api/admin/usuarios');
+            const data = await res.json();
+            const list = document.getElementById('admin-users-list');
+
+            list.innerHTML = (data.usuarios || []).map(u => `
+                <div class="flex items-center px-6 py-3 gap-4 hover:bg-white/[0.02]">
+                    <span class="text-sm font-medium text-white">${u.username}</span>
+                    ${u.es_administrador ? '<span class="text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full">Admin</span>' : ''}
+                    <span class="text-xs text-gray-500 ml-auto">${new Date(u.created_at).toLocaleDateString('es-ES')}</span>
+                    ${!u.es_administrador ? `<button onclick="deleteUser(${u.id}, '${u.username}')" class="text-xs px-2 py-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors">🗑️</button>` : ''}
+                </div>
+            `).join('') || '<p class="text-gray-500 text-sm p-6">No hay usuarios.</p>';
+        } catch(e) { console.error(e); }
+    }
+
+    async function deleteUser(id, username) {
+        if (!confirm(`¿Eliminar al usuario "${username}" y todos sus pronósticos?`)) return;
+        try {
+            const res = await apiFetch(`/api/admin/usuarios/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('success', data.message);
+                loadAdminUsers();
+            } else {
+                showToast('error', data.error);
+            }
+        } catch(e) { showToast('error', 'Error al eliminar usuario.'); }
+    }
+
+    async function adminCreateUser(e) {
+        e.preventDefault();
+        const username = document.getElementById('new-user-username').value.trim();
+        const password = document.getElementById('new-user-password').value;
+        const btn = document.getElementById('btn-create-user');
+
+        btn.disabled = true;
+        btn.textContent = 'Creando...';
+
+        try {
+            const res = await apiFetch('/api/auth/register', {
+                method: 'POST',
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                showToast('success', data.message);
+                document.getElementById('create-user-form').reset();
+                await loadAdminUsers();
+            } else {
+                showToast('error', data.error);
+            }
+        } catch(e) {
+            showToast('error', 'Error al crear usuario.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Crear Cuenta';
+        }
+    }
+
+    // ── Sync ──
+    async function syncCuotas() {
+        const btn = document.getElementById('btn-sync-cuotas');
+        btn.disabled = true;
+        try {
+            const res = await apiFetch('/api/admin/sync-cuotas', { method: 'POST' });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('success', data.message || `Cuotas: ${data.created} creados, ${data.updated} actualizados. Créditos: ${data.remaining_credits || '?'}`);
+                loadAdminMatches();
+            } else {
+                showToast('error', data.error || 'Error en sync.');
+            }
+        } catch(e) { showToast('error', 'Error de conexión.'); }
+        btn.disabled = false;
+    }
+
+    async function syncResultados() {
+        const btn = document.getElementById('btn-sync-results');
+        btn.disabled = true;
+        try {
+            const res = await apiFetch('/api/admin/sync-resultados', { method: 'POST' });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('success', data.message || `Resultados: ${data.updated} partidos actualizados, ${data.scored} predicciones evaluadas.`);
+                loadAdminMatches();
+            } else {
+                showToast('error', data.error || 'Error en sync.');
+            }
+        } catch(e) { showToast('error', 'Error de conexión.'); }
+        btn.disabled = false;
+    }
+
+    // ── Create Match ──
+    function showAddMatch() {
+        document.getElementById('add-match-modal').classList.toggle('hidden');
+    }
+
+    async function createMatch(e) {
+        e.preventDefault();
+        const body = {
+            jornada: parseInt(document.getElementById('new-jornada').value),
+            equipo_local: document.getElementById('new-local').value,
+            equipo_visitante: document.getElementById('new-visitante').value,
+            fecha_partido: new Date(document.getElementById('new-fecha').value).toISOString(),
+            cuota_1: parseFloat(document.getElementById('new-cuota1').value),
+            cuota_x: parseFloat(document.getElementById('new-cuotax').value),
+            cuota_2: parseFloat(document.getElementById('new-cuota2').value),
+        };
+
+        try {
+            const res = await apiFetch('/api/admin/partidos', { method: 'POST', body: JSON.stringify(body) });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('success', data.message);
+                document.getElementById('add-match-form').reset();
+                document.getElementById('add-match-modal').classList.add('hidden');
+                loadAdminMatches();
+            } else {
+                showToast('error', data.error);
+            }
+        } catch(e) { showToast('error', 'Error de conexión.'); }
+    }
+
+    // ── Delete Match ──
+    async function deleteMatch(id) {
+        if (!confirm('¿Eliminar este partido y todos sus pronósticos?')) return;
+        try {
+            const res = await apiFetch(`/api/admin/partidos/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('success', data.message);
+                loadAdminMatches();
+            } else {
+                showToast('error', data.error);
+            }
+        } catch(e) { showToast('error', 'Error de conexión.'); }
+    }
+
+    // ── Finalize Modal ──
+    function showFinalizeModal(id, name) {
+        document.getElementById('finalize-match-id').value = id;
+        document.getElementById('finalize-match-name').textContent = name;
+        document.getElementById('finalize-modal').classList.remove('hidden');
+        selectedFinalResult = null;
+        ['1', 'X', '2'].forEach(r => {
+            document.getElementById(`fin-btn-${r}`).classList.remove('bg-brand-600', 'border-brand-500');
+            document.getElementById(`fin-btn-${r}`).classList.add('bg-surface-700', 'border-surface-500');
+        });
+        document.getElementById('btn-confirm-finalize').disabled = true;
+    }
+
+    function closeFinalizeModal() {
+        document.getElementById('finalize-modal').classList.add('hidden');
+    }
+
+    function selectFinalResult(r) {
+        selectedFinalResult = r;
+        ['1', 'X', '2'].forEach(x => {
+            const btn = document.getElementById(`fin-btn-${x}`);
+            if (x === r) {
+                btn.classList.add('bg-brand-600', 'border-brand-500');
+                btn.classList.remove('bg-surface-700', 'border-surface-500');
+            } else {
+                btn.classList.remove('bg-brand-600', 'border-brand-500');
+                btn.classList.add('bg-surface-700', 'border-surface-500');
+            }
+        });
+        document.getElementById('btn-confirm-finalize').disabled = false;
+    }
+
+    async function confirmFinalize() {
+        const id = document.getElementById('finalize-match-id').value;
+        if (!selectedFinalResult) return;
+
+        try {
+            const res = await apiFetch(`/api/admin/partidos/${id}/finalizar`, {
+                method: 'POST',
+                body: JSON.stringify({ resultado_real: selectedFinalResult }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('success', data.message);
+                closeFinalizeModal();
+                loadAdminMatches();
+            } else {
+                showToast('error', data.error);
+            }
+        } catch(e) { showToast('error', 'Error de conexión.'); }
+    }
+
+    function switchAdminTab(tab) {
+        const tabUsers = document.getElementById('admin-tab-users');
+        const tabMatches = document.getElementById('admin-tab-matches');
+        const sectionUsers = document.getElementById('section-users');
+        const sectionMatches = document.getElementById('section-matches');
+
+        if (tab === 'users') {
+            tabUsers.classList.add('active', 'text-brand-400');
+            tabUsers.classList.remove('text-gray-500');
+            tabMatches.classList.remove('active', 'text-brand-400');
+            tabMatches.classList.add('text-gray-500');
+            
+            sectionUsers.classList.remove('hidden');
+            sectionMatches.classList.add('hidden');
+        } else {
+            tabMatches.classList.add('active', 'text-brand-400');
+            tabMatches.classList.remove('text-gray-500');
+            tabUsers.classList.remove('active', 'text-brand-400');
+            tabUsers.classList.add('text-gray-500');
+            
+            sectionMatches.classList.remove('hidden');
+            sectionUsers.classList.add('hidden');
+            
+            loadAdminMatches();
+        }
+    }
+</script>
+{% endblock %}
