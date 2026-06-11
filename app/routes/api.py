@@ -499,3 +499,268 @@ def pronosticos_partido(partido_id: int):
         result.append(item)
 
     return jsonify({"pronosticos": result, "partido": partido.to_dict()}), 200
+
+
+@api_bp.route("/equipos", methods=["GET"])
+def listar_equipos():
+    """Obtiene la lista única de equipos reales cargados en el sistema."""
+    locals_q = db.session.query(Partido.equipo_local).distinct()
+    aways_q = db.session.query(Partido.equipo_visitante).distinct()
+    raw_equipos = list(set([r[0] for r in locals_q.all() + aways_q.all()]))
+    
+    keywords = ["Group", "Match", "Runner-up", "Winner", "3rd", "4th", "Pendiente"]
+    equipos = sorted([e for e in raw_equipos if not any(k in e for k in keywords)])
+    
+    return jsonify({"equipos": equipos}), 200
+
+
+def get_specials_time_window():
+    from app.models.partido import Partido
+    first_j1 = Partido.query.filter_by(jornada=1).order_by(Partido.fecha_partido.asc()).first()
+    first_j2 = Partido.query.filter_by(jornada=2).order_by(Partido.fecha_partido.asc()).first()
+    
+    import datetime
+    from datetime import timezone
+    
+    world_cup_start = first_j1.fecha_partido.replace(tzinfo=timezone.utc) if first_j1 else datetime.datetime(2026, 6, 11, 16, 0, 0, tzinfo=timezone.utc)
+    jornada_2_start = first_j2.fecha_partido.replace(tzinfo=timezone.utc) if first_j2 else datetime.datetime(2026, 6, 18, 14, 0, 0, tzinfo=timezone.utc)
+    return world_cup_start, jornada_2_start
+
+
+@api_bp.route("/predicciones-especiales", methods=["GET"])
+@jwt_required()
+def obtener_predicciones_especiales():
+    """Obtiene las predicciones especiales del usuario logueado."""
+    user_id = int(get_jwt_identity())
+    claims = get_jwt()
+    es_admin = claims.get("es_admin", False)
+
+    from app.models.prediccion_especial import PrediccionEspecial
+    preds = PrediccionEspecial.query.filter_by(usuario_id=user_id).all()
+    preds_dict = {p.categoria: p.valor_pronosticado for p in preds}
+
+    # Time window evaluation
+    world_cup_start, j2_start = get_specials_time_window()
+    import datetime
+    from datetime import timezone
+    now = datetime.datetime.now(timezone.utc)
+
+    if now < world_cup_start:
+        state = "locked"
+    elif now < j2_start:
+        state = "open"
+    else:
+        state = "closed"
+
+    return jsonify({
+        "predicciones": preds_dict,
+        "state": state,
+        "world_cup_start": world_cup_start.isoformat(),
+        "jornada_2_start": j2_start.isoformat(),
+        "now": now.isoformat()
+    }), 200
+
+
+@api_bp.route("/predicciones-especiales", methods=["POST"])
+@jwt_required()
+def guardar_predicciones_especiales():
+    """Guarda o actualiza las predicciones especiales del usuario logueado."""
+    user_id = int(get_jwt_identity())
+    claims = get_jwt()
+    es_admin = claims.get("es_admin", False)
+
+    # Time window evaluation for non-admins
+    if not es_admin:
+        world_cup_start, j2_start = get_specials_time_window()
+        import datetime
+        from datetime import timezone
+        now = datetime.datetime.now(timezone.utc)
+
+        if now < world_cup_start:
+            return jsonify({"error": "La votación de pronósticos especiales aún está bloqueada."}), 403
+        elif now >= j2_start:
+            return jsonify({"error": "La votación de pronósticos especiales ya se ha cerrado."}), 403
+
+    data = request.get_json() or {}
+    
+    # Validaciones de consistencia lógica
+    campeon = data.get("campeon", "").strip()
+    subcampeon = data.get("subcampeon", "").strip()
+    semi1 = data.get("semifinalista_1", "").strip()
+    semi2 = data.get("semifinalista_2", "").strip()
+    semi3 = data.get("semifinalista_3", "").strip()
+    semi4 = data.get("semifinalista_4", "").strip()
+
+    if campeon and subcampeon and campeon == subcampeon:
+        return jsonify({"error": "El campeón y el subcampeón no pueden ser el mismo equipo."}), 400
+    if campeon and semi1 and campeon != semi1:
+        return jsonify({"error": "El Semifinalista 1 debe ser el campeón seleccionado."}), 400
+    if subcampeon and semi2 and subcampeon != semi2:
+        return jsonify({"error": "El Semifinalista 2 debe ser el subcampeón seleccionado."}), 400
+        
+    semis_provided = [s for s in [semi1, semi2, semi3, semi4] if s]
+    if len(semis_provided) != len(set(semis_provided)):
+        return jsonify({"error": "No puede haber equipos duplicados entre los semifinalistas."}), 400
+
+    if semi3:
+        if campeon and semi3 == campeon:
+            return jsonify({"error": "El Semifinalista 3 no puede ser el campeón."}), 400
+        if subcampeon and semi3 == subcampeon:
+            return jsonify({"error": "El Semifinalista 3 no puede ser el subcampeón."}), 400
+    if semi4:
+        if campeon and semi4 == campeon:
+            return jsonify({"error": "El Semifinalista 4 no puede ser el campeón."}), 400
+        if subcampeon and semi4 == subcampeon:
+            return jsonify({"error": "El Semifinalista 4 no puede ser el subcampeón."}), 400
+
+    from app.models.prediccion_especial import PrediccionEspecial
+
+    valid_categories = [
+        "campeon", "subcampeon", 
+        "semifinalista_1", "semifinalista_2", "semifinalista_3", "semifinalista_4",
+        "maximo_goleador", "equipo_mas_goleador"
+    ]
+
+    for cat in valid_categories:
+        if cat in data:
+            val = str(data[cat]).strip()
+            if val:
+                pred = PrediccionEspecial.query.filter_by(usuario_id=user_id, categoria=cat).first()
+                if pred:
+                    if not pred.evaluado:
+                        pred.valor_pronosticado = val
+                else:
+                    pred = PrediccionEspecial(
+                        usuario_id=user_id,
+                        categoria=cat,
+                        valor_pronosticado=val
+                    )
+                    db.session.add(pred)
+
+    db.session.commit()
+    return jsonify({"message": "Pronósticos especiales guardados correctamente."}), 200
+
+
+# ──────────────────────────────────────────────
+# Multiplicadores por Fase
+# ──────────────────────────────────────────────
+
+
+@api_bp.route("/multiplicadores", methods=["GET"])
+def listar_multiplicadores():
+    """Devuelve los multiplicadores de fase del torneo y sus nombres."""
+    from flask import current_app
+    multipliers = current_app.config.get("PHASE_MULTIPLIERS", {})
+    names = current_app.config.get("PHASE_NAMES", {})
+
+    phases = []
+    for jornada in sorted(multipliers.keys()):
+        phases.append({
+            "jornada": jornada,
+            "nombre": names.get(jornada, f"Jornada {jornada}"),
+            "multiplicador": multipliers[jornada],
+        })
+
+    return jsonify({"fases": phases}), 200
+
+
+# ──────────────────────────────────────────────
+# Estadísticas Comunitarias de Especiales
+# ──────────────────────────────────────────────
+
+
+@api_bp.route("/predicciones-especiales/comunidad", methods=["GET"])
+@jwt_required()
+def obtener_especiales_comunidad():
+    """
+    Devuelve las predicciones especiales de todos los jugadores y estadísticas
+    de qué opción ha sido la más votada por categoría.
+    Solo accesible cuando el estado de especiales es 'closed' o para admins.
+    """
+    claims = get_jwt()
+    es_admin = claims.get("es_admin", False)
+
+    # Time window evaluation
+    world_cup_start, j2_start = get_specials_time_window()
+    import datetime
+    from datetime import timezone
+    now = datetime.datetime.now(timezone.utc)
+
+    if now < j2_start and not es_admin:
+        return jsonify({"error": "Las predicciones de la comunidad estarán disponibles cuando cierre el plazo de votación."}), 403
+
+    from app.models.prediccion_especial import PrediccionEspecial
+    from app.models.usuario import Usuario
+
+    # Get all non-admin users who have predictions
+    usuarios = Usuario.query.filter_by(es_administrador=False).all()
+    user_map = {u.id: u.username for u in usuarios}
+
+    preds = PrediccionEspecial.query.filter(
+        PrediccionEspecial.usuario_id.in_(list(user_map.keys()))
+    ).all()
+
+    # Build per-user predictions
+    user_predictions = {}
+    for p in preds:
+        uid = p.usuario_id
+        if uid not in user_predictions:
+            user_predictions[uid] = {
+                "usuario_id": uid,
+                "username": user_map.get(uid, "Desconocido"),
+            }
+        user_predictions[uid][p.categoria] = p.valor_pronosticado
+
+    jugadores = sorted(user_predictions.values(), key=lambda x: x["username"].lower())
+
+    # Build statistics: count votes per category
+    categorias = [
+        "campeon", "subcampeon",
+        "semifinalista_1", "semifinalista_2", "semifinalista_3", "semifinalista_4",
+        "maximo_goleador", "equipo_mas_goleador"
+    ]
+
+    # For semifinalistas, aggregate all 4 into one combined category for stats
+    stats = {}
+    for cat in ["campeon", "subcampeon", "maximo_goleador", "equipo_mas_goleador"]:
+        vote_counts = {}
+        for p in preds:
+            if p.categoria == cat:
+                val = p.valor_pronosticado.strip()
+                vote_counts[val] = vote_counts.get(val, 0) + 1
+
+        total_votes = sum(vote_counts.values())
+        ranked = sorted(vote_counts.items(), key=lambda x: x[1], reverse=True)
+        stats[cat] = {
+            "total_votos": total_votes,
+            "ranking": [
+                {"valor": v, "votos": c, "porcentaje": round(c / total_votes * 100, 1) if total_votes else 0}
+                for v, c in ranked
+            ]
+        }
+
+    # Semifinalistas: aggregate all 4 slots into one combined pool
+    semi_counts = {}
+    total_semi_voters = 0
+    semi_voter_ids = set()
+    for p in preds:
+        if p.categoria.startswith("semifinalista_"):
+            val = p.valor_pronosticado.strip()
+            semi_counts[val] = semi_counts.get(val, 0) + 1
+            semi_voter_ids.add(p.usuario_id)
+    total_semi_voters = len(semi_voter_ids)
+    ranked_semis = sorted(semi_counts.items(), key=lambda x: x[1], reverse=True)
+    stats["semifinalistas"] = {
+        "total_votos": sum(semi_counts.values()),
+        "total_votantes": total_semi_voters,
+        "ranking": [
+            {"valor": v, "votos": c, "porcentaje": round(c / (total_semi_voters * 4) * 100, 1) if total_semi_voters else 0}
+            for v, c in ranked_semis
+        ]
+    }
+
+    return jsonify({
+        "jugadores": jugadores,
+        "estadisticas": stats,
+        "total_participantes": len(jugadores),
+    }), 200

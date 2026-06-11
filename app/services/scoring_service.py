@@ -131,13 +131,26 @@ def get_current_jornada() -> int:
     return jornadas[-1]["jornada"] if jornadas else 1
 
 
+def get_phase_multiplier(jornada: int) -> float:
+    """
+    Devuelve el multiplicador de fase para una jornada determinada.
+    Las fases finales del torneo multiplican los puntos base para equilibrar
+    la importancia entre la fase de grupos y las eliminatorias.
+    """
+    from flask import current_app
+    multipliers = current_app.config.get("PHASE_MULTIPLIERS", {})
+    return multipliers.get(jornada, 1)
+
+
 def calculate_points(partido_id: int) -> int:
     """
     Evalúa todas las predicciones de un partido finalizado y asigna puntos.
 
     Sistema de puntuación estilo Bet365 Porra del Mundial:
-    - Acierto: cuota_acertada × 10 puntos
-      Ejemplos: cuota 1.10 → 11 pts | cuota 3.50 → 35 pts | cuota 4.20 → 42 pts
+    - Acierto: cuota_acertada × 10 × multiplicador_fase puntos
+      Ejemplos (Grupos x1): cuota 1.10 → 11 pts | cuota 3.50 → 35 pts
+      Ejemplos (Cuartos x5): cuota 2.50 → 125 pts
+      Ejemplos (Final x10): cuota 2.50 → 250 pts
     - Fallo: 0 puntos
     - Comodín + acierto: puntos × multiplicador dinámico (según ranking de jornada anterior)
 
@@ -152,13 +165,14 @@ def calculate_points(partido_id: int) -> int:
     cuotas = {"1": partido.cuota_1, "X": partido.cuota_x, "2": partido.cuota_2}
 
     # Obtener multiplicadores aplicables para esta jornada
-    multipliers = get_wildcard_multipliers_for_jornada(partido.jornada)
+    wildcard_multipliers = get_wildcard_multipliers_for_jornada(partido.jornada)
+    phase_mult = get_phase_multiplier(partido.jornada)
 
     for pred in predicciones:
         if pred.pronostico == partido.resultado_real:
-            puntos = cuotas.get(pred.pronostico, 1.0) * 10
+            puntos = cuotas.get(pred.pronostico, 1.0) * 10 * phase_mult
             if pred.es_comodin:
-                mult = multipliers.get(pred.usuario_id, 2.0)
+                mult = wildcard_multipliers.get(pred.usuario_id, 2.0)
                 puntos *= mult
             pred.puntos_ganados = round(puntos, 2)
         else:
@@ -170,9 +184,12 @@ def calculate_points(partido_id: int) -> int:
 
 def get_ranking_general() -> list[dict]:
     """
-    Ranking general: suma histórica de puntos de cada usuario.
+    Ranking general: suma histórica de puntos de cada usuario (partidos + especiales).
     Devuelve lista ordenada de mayor a menor.
     """
+    from app.models.prediccion_especial import PrediccionEspecial
+
+    # Puntos por partidos
     results = (
         db.session.query(
             Usuario.id,
@@ -183,21 +200,46 @@ def get_ranking_general() -> list[dict]:
         .outerjoin(Prediccion, Usuario.id == Prediccion.usuario_id)
         .filter(Usuario.es_administrador == False)  # noqa: E712
         .group_by(Usuario.id, Usuario.username)
-        .order_by(func.sum(Prediccion.puntos_ganados).desc())
         .all()
     )
 
+    # Puntos por predicciones especiales
+    especial_results = (
+        db.session.query(
+            Usuario.id,
+            func.coalesce(func.sum(PrediccionEspecial.puntos_ganados), 0).label("especial_total")
+        )
+        .outerjoin(PrediccionEspecial, Usuario.id == PrediccionEspecial.usuario_id)
+        .filter(Usuario.es_administrador == False)  # noqa: E712
+        .group_by(Usuario.id)
+        .all()
+    )
+
+    especial_map = {row.id: float(row.especial_total) for row in especial_results}
+
     ranking = []
-    for i, row in enumerate(results, 1):
+    for row in results:
+        puntos_partidos = float(row.total)
+        puntos_especiales = especial_map.get(row.id, 0.0)
+        puntos_totales = puntos_partidos + puntos_especiales
+
         ranking.append(
             {
-                "posicion": i,
                 "usuario_id": row.id,
                 "username": row.username,
-                "puntos_totales": round(float(row.total), 2),
+                "puntos_totales": round(puntos_totales, 2),
+                "puntos_partidos": round(puntos_partidos, 2),
+                "puntos_especiales": round(puntos_especiales, 2),
                 "num_pronosticos": row.num_pronosticos,
             }
         )
+
+    # Ordenar ranking por puntos totales
+    ranking.sort(key=lambda x: x["puntos_totales"], reverse=True)
+
+    # Asignar posición
+    for i, item in enumerate(ranking, 1):
+        item["posicion"] = i
 
     # Inyectar multiplicador de comodín para la jornada activa actual
     try:

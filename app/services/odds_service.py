@@ -87,29 +87,30 @@ def fetch_upcoming_odds(api_key: str, sport_key: str, jornada: int | None = None
                             elif name.lower() == "draw":
                                 cuota_x = price
 
-            # Buscar si ya existe
+            # Buscar si ya existe por ID
             existing = Partido.query.filter_by(api_match_id=match_id).first()
+            if not existing:
+                # Si no coincide por ID, intentar buscar por equipos (traducidos)
+                from app.services.worldcup_sync_service import translate_team
+                home_es = translate_team(home_team)
+                away_es = translate_team(away_team)
+                
+                # Buscamos un partido no finalizado que coincida en equipos
+                existing = Partido.query.filter(
+                    Partido.equipo_local == home_es,
+                    Partido.equipo_visitante == away_es,
+                    Partido.finalizado == False
+                ).first()
+
             if existing:
-                # Actualizar cuotas si el partido no ha empezado
-                if not existing.ha_comenzado:
+                # Actualizar cuotas si el partido no ha empezado y no es de la Jornada 1
+                if not existing.ha_comenzado and existing.jornada != 1:
                     existing.cuota_1 = cuota_1
                     existing.cuota_x = cuota_x
                     existing.cuota_2 = cuota_2
                     updated += 1
             else:
-                # Crear nuevo partido
-                partido = Partido(
-                    jornada=jornada,
-                    equipo_local=home_team,
-                    equipo_visitante=away_team,
-                    cuota_1=cuota_1,
-                    cuota_x=cuota_x,
-                    cuota_2=cuota_2,
-                    fecha_partido=fecha,
-                    api_match_id=match_id,
-                )
-                db.session.add(partido)
-                created += 1
+                logger.warning(f"No se encontró partido en BD para sincronizar cuotas: {home_team} vs {away_team}")
 
         except Exception as e:
             errors.append(f"Error procesando evento: {e}")

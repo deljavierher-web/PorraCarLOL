@@ -51,3 +51,29 @@ class Config:
     # Telegram (recordatorio de cierre de pronósticos)
     TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
     TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
+
+    # Multiplicadores por fase del torneo
+    # Cada jornada tiene un multiplicador que escala los puntos base (cuota × 10)
+    PHASE_MULTIPLIERS = {
+        1: 1,    # Fase de Grupos (J1)
+        2: 1,    # Fase de Grupos (J2)
+        3: 1,    # Fase de Grupos (J3)
+        4: 2,    # Dieciseisavos de Final (R32)
+        5: 3,    # Octavos de Final (R16)
+        6: 5,    # Cuartos de Final
+        7: 6,    # Semifinales
+        8: 6,    # Tercer Puesto
+        9: 10,   # Final
+    }
+
+    PHASE_NAMES = {
+        1: "Fase de Grupos (J1)",
+        2: "Fase de Grupos (J2)",
+        3: "Fase de Grupos (J3)",
+        4: "Dieciseisavos (R32)",
+        5: "Octavos de Final",
+        6: "Cuartos de Final",
+        7: "Semifinales",
+        8: "Tercer Puesto",
+        9: "Final",
+    }

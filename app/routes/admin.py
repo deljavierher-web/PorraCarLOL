@@ -246,4 +246,74 @@ def eliminar_usuario(usuario_id: int):
     db.session.delete(usuario)
     db.session.commit()
     return jsonify({"message": f"Usuario '{username}' eliminado correctamente."}), 200
+@admin_bp.route("/usuarios/<int:usuario_id>/aprobar", methods=["POST"])
+@admin_required
+def aprobar_usuario(usuario_id: int):
+    """Aprobar un usuario registrado."""
+    usuario = Usuario.query.get(usuario_id)
+    if not usuario:
+        return jsonify({"error": "Usuario no encontrado."}), 404
 
+    usuario.aprobado = True
+    db.session.commit()
+    return jsonify({"message": f"Usuario '{usuario.username}' aprobado correctamente."}), 200
+
+
+@admin_bp.route("/evaluar-especiales", methods=["POST"])
+@admin_required
+def evaluar_especiales():
+    """Evalúa todos los pronósticos especiales guardados en el sistema."""
+    data = request.get_json() or {}
+    
+    campeon = data.get("campeon", "").strip()
+    subcampeon = data.get("subcampeon", "").strip()
+    semifinalistas = [s.strip() for s in data.get("semifinalistas", []) if s.strip()]
+    maximo_goleador = data.get("maximo_goleador", "").strip().lower()
+    equipo_mas_goleador = data.get("equipo_mas_goleador", "").strip()
+
+    if not campeon or not subcampeon:
+        return jsonify({"error": "Debes especificar el campeón y el subcampeón."}), 400
+    if campeon == subcampeon:
+        return jsonify({"error": "El campeón y el subcampeón no pueden ser el mismo equipo."}), 400
+    if len(semifinalistas) != 4:
+        return jsonify({"error": "Debes proporcionar exactamente 4 semifinalistas."}), 400
+    if semifinalistas[0] != campeon:
+        return jsonify({"error": "El primer semifinalista debe ser el campeón."}), 400
+    if semifinalistas[1] != subcampeon:
+        return jsonify({"error": "El segundo semifinalista debe ser el subcampeón."}), 400
+    if len(set(semifinalistas)) != 4:
+        return jsonify({"error": "No puede haber equipos duplicados entre los semifinalistas."}), 400
+
+    from app.models.prediccion_especial import PrediccionEspecial
+    preds = PrediccionEspecial.query.all()
+
+    evaluated_count = 0
+    for p in preds:
+        points = 0.0
+        val = p.valor_pronosticado.strip()
+        
+        if p.categoria == "campeon":
+            if val == campeon:
+                points = 450.0
+        elif p.categoria == "subcampeon":
+            if val == subcampeon:
+                points = 300.0
+        elif p.categoria in ("semifinalista_1", "semifinalista_2", "semifinalista_3", "semifinalista_4"):
+            if val in semifinalistas:
+                points = 150.0
+        elif p.categoria == "maximo_goleador":
+            if val.lower() == maximo_goleador:
+                points = 300.0
+        elif p.categoria == "equipo_mas_goleador":
+            if val == equipo_mas_goleador:
+                points = 300.0
+        
+        p.puntos_ganados = points
+        p.evaluado = True
+        evaluated_count += 1
+
+    db.session.commit()
+    return jsonify({
+        "message": f"Evaluación completada. {evaluated_count} pronósticos especiales procesados.",
+        "evaluated_count": evaluated_count
+    }), 200

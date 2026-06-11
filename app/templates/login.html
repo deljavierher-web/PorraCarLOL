@@ -20,7 +20,9 @@
 
         <!-- Card Login -->
         <div class="card p-6 sm:p-7 animate-slideUp" style="animation-delay: 0.08s">
+            <!-- Formulario de Login -->
             <form id="login-form" class="space-y-4" onsubmit="handleLogin(event)">
+                <h3 class="text-lg font-bold text-white mb-2 text-center">Iniciar Sesión</h3>
                 <div>
                     <label for="login-username" class="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">
                         Usuario
@@ -44,6 +46,41 @@
                     Entrar a la porra →
                 </button>
             </form>
+
+            <!-- Formulario de Registro (Oculto por defecto) -->
+            <form id="register-form" class="space-y-4 hidden" onsubmit="handleRegister(event)">
+                <h3 class="text-lg font-bold text-white mb-2 text-center">Registrarse</h3>
+                <p class="text-xs text-zinc-500 text-center mb-2">Tu cuenta deberá ser aprobada por el administrador antes de poder entrar.</p>
+                <div>
+                    <label for="register-username" class="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">
+                        Usuario
+                    </label>
+                    <input type="text" id="register-username" name="username" required autocomplete="username"
+                        class="w-full px-4 py-3 bg-ink-800 border border-white/8 rounded-xl text-white text-sm placeholder-zinc-600 transition-all"
+                        style="border: 1px solid rgba(255,255,255,0.08);"
+                        placeholder="Elige tu nombre de usuario">
+                </div>
+                <div>
+                    <label for="register-password" class="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">
+                        Contraseña
+                    </label>
+                    <input type="password" id="register-password" name="password" required autocomplete="new-password"
+                        class="w-full px-4 py-3 bg-ink-800 border border-white/8 rounded-xl text-white text-sm placeholder-zinc-600 transition-all"
+                        style="border: 1px solid rgba(255,255,255,0.08);"
+                        placeholder="Mínimo 4 caracteres">
+                </div>
+                <button type="submit" id="register-submit"
+                    class="btn-primary w-full py-3.5 rounded-xl text-sm mt-2">
+                    Solicitar registro →
+                </button>
+            </form>
+
+            <!-- Botón para alternar -->
+            <div class="mt-4 text-center border-t border-white/5 pt-3">
+                <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-xs font-semibold text-volt-400 hover:text-volt-300 transition-colors">
+                    ¿No tienes cuenta? Regístrate aquí
+                </button>
+            </div>
         </div>
 
         <!-- Footer -->
@@ -57,6 +94,22 @@
     // Redirect to dashboard if already logged in
     if (localStorage.getItem('porra_token')) {
         window.location.href = '/dashboard';
+    }
+
+    function toggleAuthMode() {
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const toggleBtn = document.getElementById('auth-toggle-btn');
+
+        if (loginForm.classList.contains('hidden')) {
+            loginForm.classList.remove('hidden');
+            registerForm.classList.add('hidden');
+            toggleBtn.textContent = '¿No tienes cuenta? Regístrate aquí';
+        } else {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            toggleBtn.textContent = '¿Ya tienes cuenta? Inicia sesión';
+        }
     }
 
     async function handleLogin(e) {
@@ -89,6 +142,40 @@
         } finally {
             btn.disabled = false;
             btn.textContent = 'Entrar a la porra →';
+        }
+    }
+
+    async function handleRegister(e) {
+        e.preventDefault();
+        const username = document.getElementById('register-username').value.trim();
+        const password = document.getElementById('register-password').value;
+        const btn = document.getElementById('register-submit');
+
+        btn.disabled = true;
+        btn.textContent = 'Enviando solicitud...';
+
+        try {
+            const res = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password }),
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                showToast('success', data.message);
+                // Switch back to login
+                toggleAuthMode();
+                document.getElementById('login-username').value = username;
+                document.getElementById('login-password').value = '';
+            } else {
+                showToast('error', data.error || 'Error al registrarse.');
+            }
+        } catch (err) {
+            showToast('error', 'Error de conexión.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Solicitar registro →';
         }
     }
 </script>

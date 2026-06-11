@@ -18,11 +18,14 @@
 
     <!-- Tabs -->
     <div class="seg mb-7 animate-slideUp" style="animation-delay: 0.05s">
-        <button id="admin-tab-users" onclick="switchAdminTab('users')" class="seg-btn seg-active">
-            👥 Usuarios
+        <button id="admin-tab-users" onclick="switchAdminTab('users')" class="seg-btn seg-active flex items-center gap-1.5">
+            👥 Usuarios <span id="admin-pending-count" class="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-bold hidden">0</span>
         </button>
         <button id="admin-tab-matches" onclick="switchAdminTab('matches')" class="seg-btn">
             📅 Partidos y Cuotas
+        </button>
+        <button id="admin-tab-especiales" onclick="switchAdminTab('especiales')" class="seg-btn">
+            🏆 Especiales 🏆
         </button>
     </div>
 
@@ -173,6 +176,107 @@
             </div>
         </div>
     </div>
+
+    <!-- Section Especiales (Hidden by Default) -->
+    <div id="section-especiales" class="space-y-6 hidden animate-fadeIn">
+        <div class="card p-6">
+            <h3 class="font-display text-lg font-bold text-white mb-2">🏆 Evaluar Pronósticos Especiales</h3>
+            <p class="text-xs text-zinc-500 mb-6">Introduce los resultados oficiales del torneo para calcular y asignar los puntos correspondientes a todos los participantes.</p>
+            
+            <form id="admin-especiales-form" onsubmit="evaluarEspeciales(event)" class="space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <!-- Campeón -->
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">🥇 Campeón del Mundo Oficial</label>
+                        <select id="admin-spec-campeon" required onchange="validateAdminSpecialsDropdowns('admin-spec-campeon')" class="w-full bg-ink-800 border border-white/10 text-white px-3.5 py-2.5 rounded-xl text-sm font-semibold">
+                            <option value="">Cargando equipos...</option>
+                        </select>
+                    </div>
+
+                    <!-- Subcampeón -->
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">🥈 Subcampeón del Mundo Oficial</label>
+                        <select id="admin-spec-subcampeon" required onchange="validateAdminSpecialsDropdowns('admin-spec-subcampeon')" class="w-full bg-ink-800 border border-white/10 text-white px-3.5 py-2.5 rounded-xl text-sm font-semibold">
+                            <option value="">Cargando equipos...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <!-- Semifinalistas -->
+                    <div class="col-span-full">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">⚔️ Semifinalistas Oficiales (los 4 semifinalistas en cualquier orden)</label>
+                    </div>
+                    <div>
+                        <label class="block text-[8px] font-black uppercase text-zinc-600 mb-1">Semi 1 (Campeón)</label>
+                        <select id="admin-spec-semi-1" disabled class="w-full bg-ink-800 border border-white/5 text-zinc-500 px-3 py-2.5 rounded-xl text-xs font-semibold cursor-not-allowed opacity-60">
+                            <option value="">Auto (Campeón)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[8px] font-black uppercase text-zinc-600 mb-1">Semi 2 (Subcampeón)</label>
+                        <select id="admin-spec-semi-2" disabled class="w-full bg-ink-800 border border-white/5 text-zinc-500 px-3 py-2.5 rounded-xl text-xs font-semibold cursor-not-allowed opacity-60">
+                            <option value="">Auto (Subcampeón)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[8px] font-black uppercase text-zinc-500 mb-1">Semi 3 (Libre)</label>
+                        <select id="admin-spec-semi-3" required onchange="validateAdminSpecialsDropdowns('admin-spec-semi-3')" class="w-full bg-ink-800 border border-white/10 text-white px-3 py-2.5 rounded-xl text-xs font-semibold focus:border-volt-400 focus:outline-none transition-colors">
+                            <option value="">Cargando...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[8px] font-black uppercase text-zinc-500 mb-1">Semi 4 (Libre)</label>
+                        <select id="admin-spec-semi-4" required onchange="validateAdminSpecialsDropdowns('admin-spec-semi-4')" class="w-full bg-ink-800 border border-white/10 text-white px-3 py-2.5 rounded-xl text-xs font-semibold focus:border-volt-400 focus:outline-none transition-colors">
+                            <option value="">Cargando...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
+                    <!-- Máximo Goleador -->
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">⚽ Máximo Goleador / Bota de Oro Oficial</label>
+                        <select id="admin-spec-goleador-select" required onchange="handleAdminGoleadorChange()"
+                            class="w-full bg-ink-800 border border-white/10 text-white px-3.5 py-2.5 rounded-xl text-sm font-semibold focus:border-volt-400 focus:outline-none transition-colors">
+                            <option value="">Selecciona oficial...</option>
+                            <option value="Kylian Mbappé">Kylian Mbappé</option>
+                            <option value="Harry Kane">Harry Kane</option>
+                            <option value="Mikel Oyarzabal">Mikel Oyarzabal</option>
+                            <option value="Erling Haaland">Erling Haaland</option>
+                            <option value="Lionel Messi">Lionel Messi</option>
+                            <option value="Cristiano Ronaldo">Cristiano Ronaldo</option>
+                            <option value="Lamine Yamal">Lamine Yamal</option>
+                            <option value="Julián Álvarez">Julián Álvarez</option>
+                            <option value="Kai Havertz">Kai Havertz</option>
+                            <option value="Raphinha">Raphinha</option>
+                            <option value="Vinícius Jr.">Vinícius Jr.</option>
+                            <option value="Michael Olise">Michael Olise</option>
+                            <option value="otro">Otro (Escribir nombre)...</option>
+                        </select>
+                        <div id="admin-spec-goleador-input-container" class="hidden mt-3">
+                            <input type="text" id="admin-spec-goleador-input" placeholder="Nombre completo del jugador"
+                                class="w-full px-3.5 py-2.5 bg-ink-800 border border-white/10 rounded-xl text-white text-sm focus:border-volt-400 focus:outline-none transition-colors placeholder-zinc-600">
+                        </div>
+                    </div>
+
+                    <!-- Equipo más Goleador -->
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2">🔥 Equipo más Goleador Oficial</label>
+                        <select id="admin-spec-equipo-goleador" required class="w-full bg-ink-800 border border-white/10 text-white px-3.5 py-2.5 rounded-xl text-sm font-semibold">
+                            <option value="">Cargando equipos...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-4 border-t border-white/5">
+                    <button type="submit" id="btn-eval-specials" class="btn-primary px-8 py-3 rounded-xl text-sm">
+                        Evaluar y Guardar Resultados
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </main>
 
 <!-- Finalize Modal -->
@@ -286,19 +390,67 @@
             const data = await res.json();
             const list = document.getElementById('admin-users-list');
 
-            list.innerHTML = (data.usuarios || []).map(u => `
+            const users = data.usuarios || [];
+            
+            // Actualizar contador de solicitudes pendientes
+            const pendingCount = users.filter(u => !u.aprobado).length;
+            const countBadge = document.getElementById('admin-pending-count');
+            if (pendingCount > 0) {
+                countBadge.textContent = pendingCount;
+                countBadge.classList.remove('hidden');
+            } else {
+                countBadge.classList.add('hidden');
+            }
+
+            list.innerHTML = users.map(u => {
+                const badge = !u.aprobado ? '<span class="chip chip-pending !text-zinc-400 !bg-zinc-800 border-zinc-700">Pendiente</span>' :
+                    u.es_administrador ? '<span class="chip chip-pending">Admin</span>' : 
+                    '<span class="chip chip-done">Activo</span>';
+
+                const actions = !u.aprobado ? `
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="approveUser(${u.id}, '${u.username}')" class="text-xs px-2.5 py-1.5 rounded-lg bg-volt-400/10 border border-volt-400/20 text-volt-400 hover:bg-volt-400/20 font-bold transition-colors">Aprobar</button>
+                        <button onclick="deleteUser(${u.id}, '${u.username}', true)" class="text-xs px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 font-bold transition-colors">Rechazar</button>
+                    </div>
+                ` : `
+                    <div class="flex items-center gap-1.5">
+                        ${!u.es_administrador ? `<button onclick="deleteUser(${u.id}, '${u.username}')" class="text-xs px-2 py-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors">🗑️</button>` : ''}
+                    </div>
+                `;
+
+                return `
                 <div class="flex items-center px-6 py-3.5 gap-3 hover:bg-white/[0.02] transition-colors">
-                    <span class="text-sm font-bold text-white">${u.username}</span>
-                    ${u.es_administrador ? '<span class="chip chip-pending">Admin</span>' : ''}
-                    <span class="text-xs text-zinc-600 ml-auto">${new Date(u.created_at).toLocaleDateString('es-ES')}</span>
-                    ${!u.es_administrador ? `<button onclick="deleteUser(${u.id}, '${u.username}')" class="text-xs px-2 py-1.5 rounded-lg text-zinc-600 hover:text-red-400 hover:bg-red-500/10 transition-colors">🗑️</button>` : ''}
-                </div>
-            `).join('') || '<p class="text-zinc-500 text-sm p-6">No hay usuarios.</p>';
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold text-white">${u.username}</span>
+                        <span class="text-xs text-zinc-600">${new Date(u.created_at).toLocaleDateString('es-ES')}</span>
+                    </div>
+                    <div class="flex items-center gap-3 ml-auto">
+                        ${badge}
+                        ${actions}
+                    </div>
+                </div>`;
+            }).join('') || '<p class="text-zinc-500 text-sm p-6">No hay usuarios.</p>';
         } catch(e) { console.error(e); }
     }
 
-    async function deleteUser(id, username) {
-        if (!confirm(`¿Eliminar al usuario "${username}" y todos sus pronósticos?`)) return;
+    async function approveUser(id, username) {
+        try {
+            const res = await apiFetch(`/api/admin/usuarios/${id}/aprobar`, { method: 'POST' });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('success', data.message);
+                loadAdminUsers();
+            } else {
+                showToast('error', data.error);
+            }
+        } catch(e) { showToast('error', 'Error al aprobar usuario.'); }
+    }
+
+    async function deleteUser(id, username, isReject = false) {
+        const confirmMsg = isReject 
+            ? `¿Rechazar y eliminar la solicitud de registro de "${username}"?` 
+            : `¿Eliminar al usuario "${username}" y todos sus pronósticos?`;
+        if (!confirm(confirmMsg)) return;
         try {
             const res = await apiFetch(`/api/admin/usuarios/${id}`, { method: 'DELETE' });
             const data = await res.json();
@@ -473,23 +625,211 @@
     function switchAdminTab(tab) {
         const tabUsers = document.getElementById('admin-tab-users');
         const tabMatches = document.getElementById('admin-tab-matches');
+        const tabEspeciales = document.getElementById('admin-tab-especiales');
         const sectionUsers = document.getElementById('section-users');
         const sectionMatches = document.getElementById('section-matches');
+        const sectionEspeciales = document.getElementById('section-especiales');
+
+        tabUsers.classList.remove('seg-active');
+        tabMatches.classList.remove('seg-active');
+        tabEspeciales.classList.remove('seg-active');
+        sectionUsers.classList.add('hidden');
+        sectionMatches.classList.add('hidden');
+        sectionEspeciales.classList.add('hidden');
 
         if (tab === 'users') {
             tabUsers.classList.add('seg-active');
-            tabMatches.classList.remove('seg-active');
-
             sectionUsers.classList.remove('hidden');
-            sectionMatches.classList.add('hidden');
-        } else {
+        } else if (tab === 'matches') {
             tabMatches.classList.add('seg-active');
-            tabUsers.classList.remove('seg-active');
-
             sectionMatches.classList.remove('hidden');
-            sectionUsers.classList.add('hidden');
-
             loadAdminMatches();
+        } else if (tab === 'especiales') {
+            tabEspeciales.classList.add('seg-active');
+            sectionEspeciales.classList.remove('hidden');
+            loadAdminTeamsList();
+        }
+    }
+
+    let adminTeamsLoaded = false;
+    async function loadAdminTeamsList() {
+        if (adminTeamsLoaded) return;
+        try {
+            const res = await apiFetch('/api/equipos');
+            const data = await res.json();
+            const teams = data.equipos || [];
+
+            const dropdowns = [
+                'admin-spec-campeon',
+                'admin-spec-subcampeon',
+                'admin-spec-semi-1',
+                'admin-spec-semi-2',
+                'admin-spec-semi-3',
+                'admin-spec-semi-4',
+                'admin-spec-equipo-goleador'
+            ];
+
+            dropdowns.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">Selecciona equipo...</option>';
+                    teams.forEach(team => {
+                        const opt = document.createElement('option');
+                        opt.value = team;
+                        opt.textContent = teamWithFlag(team);
+                        select.appendChild(opt);
+                    });
+                }
+            });
+            adminTeamsLoaded = true;
+            validateAdminSpecialsDropdowns();
+        } catch (err) {
+            console.error('Error al cargar equipos:', err);
+            showToast('error', 'Error al cargar la lista de equipos.');
+        }
+    }
+
+    function validateAdminSpecialsDropdowns(changedId) {
+        const campeon = document.getElementById('admin-spec-campeon').value;
+        const subcampeon = document.getElementById('admin-spec-subcampeon').value;
+        const semi1 = document.getElementById('admin-spec-semi-1');
+        const semi2 = document.getElementById('admin-spec-semi-2');
+        const semi3 = document.getElementById('admin-spec-semi-3');
+        const semi4 = document.getElementById('admin-spec-semi-4');
+
+        if (campeon) {
+            let opt = semi1.querySelector(`option[value="${campeon}"]`);
+            if (!opt) {
+                opt = document.createElement('option');
+                opt.value = campeon;
+                opt.textContent = teamWithFlag(campeon);
+                semi1.appendChild(opt);
+            }
+            semi1.value = campeon;
+        } else {
+            semi1.value = "";
+        }
+
+        if (subcampeon) {
+            let opt = semi2.querySelector(`option[value="${subcampeon}"]`);
+            if (!opt) {
+                opt = document.createElement('option');
+                opt.value = subcampeon;
+                opt.textContent = teamWithFlag(subcampeon);
+                semi2.appendChild(opt);
+            }
+            semi2.value = subcampeon;
+        } else {
+            semi2.value = "";
+        }
+
+        if (changedId === 'admin-spec-campeon') {
+            if (campeon && campeon === subcampeon) {
+                document.getElementById('admin-spec-subcampeon').value = "";
+                semi2.value = "";
+                showToast('info', 'El subcampeón no puede ser el mismo que el campeón.');
+            }
+            if (campeon && campeon === semi3.value) semi3.value = "";
+            if (campeon && campeon === semi4.value) semi4.value = "";
+        }
+        
+        if (changedId === 'admin-spec-subcampeon') {
+            if (subcampeon && subcampeon === campeon) {
+                document.getElementById('admin-spec-campeon').value = "";
+                semi1.value = "";
+                showToast('info', 'El campeón no puede ser el mismo que el subcampeón.');
+            }
+            if (subcampeon && subcampeon === semi3.value) semi3.value = "";
+            if (subcampeon && subcampeon === semi4.value) semi4.value = "";
+        }
+
+        if (changedId === 'admin-spec-semi-3') {
+            const val = semi3.value;
+            if (val && (val === campeon || val === subcampeon)) {
+                semi3.value = "";
+                showToast('info', 'Este equipo ya está clasificado como semifinalista por ser Campeón o Subcampeón.');
+            } else if (val && val === semi4.value) {
+                semi4.value = "";
+                showToast('info', 'No puedes elegir el mismo semifinalista dos veces.');
+            }
+        }
+
+        if (changedId === 'admin-spec-semi-4') {
+            const val = semi4.value;
+            if (val && (val === campeon || val === subcampeon)) {
+                semi4.value = "";
+                showToast('info', 'Este equipo ya está clasificado como semifinalista por ser Campeón o Subcampeón.');
+            } else if (val && val === semi3.value) {
+                semi3.value = "";
+                showToast('info', 'No puedes elegir el mismo semifinalista dos veces.');
+            }
+        }
+    }
+
+    function handleAdminGoleadorChange() {
+        const select = document.getElementById('admin-spec-goleador-select');
+        const container = document.getElementById('admin-spec-goleador-input-container');
+        const input = document.getElementById('admin-spec-goleador-input');
+        
+        if (select.value === 'otro') {
+            container.classList.remove('hidden');
+            input.required = true;
+            input.focus();
+        } else {
+            container.classList.add('hidden');
+            input.required = false;
+            input.value = '';
+        }
+    }
+
+    async function evaluarEspeciales(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-eval-specials');
+        btn.disabled = true;
+        btn.textContent = 'Procesando...';
+
+        // Goleador parsing
+        const selectVal = document.getElementById('admin-spec-goleador-select').value;
+        const textVal = document.getElementById('admin-spec-goleador-input').value.trim();
+        const maximoGoleador = selectVal === 'otro' ? textVal : selectVal;
+
+        if (!maximoGoleador) {
+            showToast('error', 'Por favor selecciona o escribe el máximo goleador oficial.');
+            btn.disabled = false;
+            btn.textContent = 'Evaluar y Guardar Resultados';
+            return;
+        }
+
+        const body = {
+            campeon: document.getElementById('admin-spec-campeon').value,
+            subcampeon: document.getElementById('admin-spec-subcampeon').value,
+            semifinalistas: [
+                document.getElementById('admin-spec-semi-1').value,
+                document.getElementById('admin-spec-semi-2').value,
+                document.getElementById('admin-spec-semi-3').value,
+                document.getElementById('admin-spec-semi-4').value
+            ],
+            maximo_goleador: maximoGoleador,
+            equipo_mas_goleador: document.getElementById('admin-spec-equipo-goleador').value
+        };
+
+        try {
+            const res = await apiFetch('/api/admin/evaluar-especiales', {
+                method: 'POST',
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('success', data.message);
+            } else {
+                showToast('error', data.error);
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('error', 'Error de conexión.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Evaluar y Guardar Resultados';
         }
     }
 </script>

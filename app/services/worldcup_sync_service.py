@@ -86,12 +86,15 @@ TEAM_TRANSLATIONS = {
     "Portugal": "Portugal",
     "Democratic Republic of the Congo": "Rep. Dem. Congo",
     "Congo DR": "Rep. Dem. Congo",
+    "DR Congo": "Rep. Dem. Congo",
     "England": "Inglaterra",
     "Croatia": "Croacia",
     "Uzbekistan": "Uzbekistán",
     "Colombia": "Colombia",
     "Ghana": "Ghana",
     "Panama": "Panamá",
+    "USA": "Estados Unidos",
+    "Bosnia & Herzegovina": "Bosnia y Herzegovina",
 }
 
 def translate_team(name: str) -> str:

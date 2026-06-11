@@ -1,0 +1,599 @@
+{% extends "base.html" %}
+{% block title %}Pronósticos Especiales{% endblock %}
+
+{% block body %}
+{% set active = 'especiales' %}
+{% include '_nav.html' %}
+
+<main class="max-w-4xl mx-auto px-4 sm:px-6 py-8 pb-28 sm:pb-14">
+
+    <!-- Header -->
+    <div class="mb-8 animate-slideUp">
+        <p class="eyebrow mb-2 font-display text-xs tracking-[0.2em] text-volt-400 uppercase">A largo plazo</p>
+        <h1 class="font-display text-3xl sm:text-5xl font-bold tracking-tight text-white">
+            Pronósticos <span class="gradient-text">especiales</span> 🏆
+        </h1>
+        <p class="text-zinc-500 text-sm mt-3">Predice los resultados a largo plazo del torneo y gana hasta 1950 puntos extra al finalizar el Mundial.</p>
+    </div>
+
+    <!-- Countdown / Locked Banner (Visible for non-admins before World Cup start) -->
+    <div id="locked-banner" class="hidden card p-8 text-center flex flex-col items-center justify-center min-h-[350px] animate-slideUp" style="animation-delay: 0.05s">
+        <div class="w-16 h-16 rounded-full bg-ink-800 border border-white/5 flex items-center justify-center text-3xl mb-6 shadow-glow">🔒</div>
+        <h3 class="font-display text-xl sm:text-2xl font-bold text-white mb-2">Votación Bloqueada</h3>
+        <p class="text-zinc-500 text-sm max-w-md mx-auto mb-8">Esta sección se desbloqueará para los participantes cuando comience oficialmente el Mundial 2026.</p>
+        
+        <div class="flex flex-col items-center gap-2">
+            <span class="text-[10px] font-black uppercase tracking-widest text-zinc-600">Se abre en:</span>
+            <div id="unlock-timer" class="flex items-center gap-2">
+                <div class="flex flex-col items-center">
+                    <span id="lock-days" class="bg-ink-700 border border-white/5 text-volt-400 font-display font-black text-xl sm:text-3xl px-4 py-2.5 rounded-xl shadow-glow">00</span>
+                    <span class="text-[9px] text-zinc-500 font-semibold uppercase mt-1.5 tracking-wider">Días</span>
+                </div>
+                <span class="text-zinc-600 font-bold text-xl sm:text-2xl mb-5">:</span>
+                <div class="flex flex-col items-center">
+                    <span id="lock-hours" class="bg-ink-700 border border-white/5 text-volt-400 font-display font-black text-xl sm:text-3xl px-4 py-2.5 rounded-xl shadow-glow">00</span>
+                    <span class="text-[9px] text-zinc-500 font-semibold uppercase mt-1.5 tracking-wider">Horas</span>
+                </div>
+                <span class="text-zinc-600 font-bold text-xl sm:text-2xl mb-5">:</span>
+                <div class="flex flex-col items-center">
+                    <span id="lock-minutes" class="bg-ink-700 border border-white/5 text-volt-400 font-display font-black text-xl sm:text-3xl px-4 py-2.5 rounded-xl shadow-glow">00</span>
+                    <span class="text-[9px] text-zinc-500 font-semibold uppercase mt-1.5 tracking-wider">Mins</span>
+                </div>
+                <span class="text-zinc-600 font-bold text-xl sm:text-2xl mb-5">:</span>
+                <div class="flex flex-col items-center">
+                    <span id="lock-seconds" class="bg-ink-700 border border-white/5 text-volt-400 font-display font-black text-xl sm:text-3xl px-4 py-2.5 rounded-xl shadow-glow">00</span>
+                    <span class="text-[9px] text-zinc-500 font-semibold uppercase mt-1.5 tracking-wider">Segs</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Closed / Read-Only Banner (Visible when closed) -->
+    <div id="closed-banner" class="hidden mb-6 card p-4 !border-orange-500/20 bg-orange-500/[0.02] flex items-center gap-3 animate-slideUp">
+        <span class="text-xl flex-shrink-0">🔒</span>
+        <div class="min-w-0">
+            <h4 class="text-sm font-bold text-white">Periodo de votación cerrado</h4>
+            <p class="text-xs text-zinc-500 mt-0.5">El plazo expiró al comenzar la segunda jornada. Tus apuestas están bloqueadas y guardadas.</p>
+        </div>
+    </div>
+
+    <!-- Specials Form Container -->
+    <div id="form-container" class="hidden space-y-6">
+        <div class="card p-6 sm:p-8">
+            <form id="specials-form" onsubmit="saveSpecialPredictions(event)" class="space-y-6">
+                <!-- Grid: Campeón & Subcampeón -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <!-- Campeón -->
+                    <div class="flex flex-col">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2.5">🥇 Campeón del Mundo (+450 pts)</label>
+                        <select id="spec-campeon" required onchange="validateSpecialsDropdowns('spec-campeon')" class="w-full bg-ink-800 border border-white/10 text-white px-4 py-3 rounded-xl text-sm font-semibold focus:border-volt-400 focus:outline-none transition-colors">
+                            <option value="">Cargando equipos...</option>
+                        </select>
+                    </div>
+
+                    <!-- Subcampeón -->
+                    <div class="flex flex-col">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2.5">🥈 Subcampeón del Mundo (+300 pts)</label>
+                        <select id="spec-subcampeon" required onchange="validateSpecialsDropdowns('spec-subcampeon')" class="w-full bg-ink-800 border border-white/10 text-white px-4 py-3 rounded-xl text-sm font-semibold focus:border-volt-400 focus:outline-none transition-colors">
+                            <option value="">Cargando equipos...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Grid: Semifinalistas -->
+                <div class="space-y-3 pt-2">
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500">⚔️ Semifinalistas (+150 pts por acierto, máx. 600 pts)</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-[8px] font-black uppercase text-zinc-600 mb-1">Semi 1 (Campeón)</label>
+                            <select id="spec-semi-1" disabled class="w-full bg-ink-800 border border-white/5 text-zinc-500 px-3 py-2.5 rounded-xl text-xs font-semibold cursor-not-allowed opacity-60">
+                                <option value="">Auto (Campeón)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-black uppercase text-zinc-600 mb-1">Semi 2 (Subcampeón)</label>
+                            <select id="spec-semi-2" disabled class="w-full bg-ink-800 border border-white/5 text-zinc-500 px-3 py-2.5 rounded-xl text-xs font-semibold cursor-not-allowed opacity-60">
+                                <option value="">Auto (Subcampeón)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-black uppercase text-zinc-500 mb-1">Semi 3 (Libre)</label>
+                            <select id="spec-semi-3" required onchange="validateSpecialsDropdowns('spec-semi-3')" class="w-full bg-ink-800 border border-white/10 text-white px-3 py-2.5 rounded-xl text-xs font-semibold focus:border-volt-400 focus:outline-none transition-colors">
+                                <option value="">Cargando...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[8px] font-black uppercase text-zinc-500 mb-1">Semi 4 (Libre)</label>
+                            <select id="spec-semi-4" required onchange="validateSpecialsDropdowns('spec-semi-4')" class="w-full bg-ink-800 border border-white/10 text-white px-3 py-2.5 rounded-xl text-xs font-semibold focus:border-volt-400 focus:outline-none transition-colors">
+                                <option value="">Cargando...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid: Máximo Goleador & Equipo más Goleador -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+                    <!-- Máximo Goleador -->
+                    <div class="flex flex-col">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2.5">⚽ Máximo Goleador / Bota de Oro (+300 pts)</label>
+                        <select id="spec-goleador-select" required onchange="handleGoleadorChange()"
+                            class="w-full bg-ink-800 border border-white/10 text-white px-4 py-3 rounded-xl text-sm font-semibold focus:border-volt-400 focus:outline-none transition-colors">
+                            <option value="">Selecciona un favorito...</option>
+                            <option value="Kylian Mbappé">Kylian Mbappé</option>
+                            <option value="Harry Kane">Harry Kane</option>
+                            <option value="Mikel Oyarzabal">Mikel Oyarzabal</option>
+                            <option value="Erling Haaland">Erling Haaland</option>
+                            <option value="Lionel Messi">Lionel Messi</option>
+                            <option value="Cristiano Ronaldo">Cristiano Ronaldo</option>
+                            <option value="Lamine Yamal">Lamine Yamal</option>
+                            <option value="Julián Álvarez">Julián Álvarez</option>
+                            <option value="Kai Havertz">Kai Havertz</option>
+                            <option value="Raphinha">Raphinha</option>
+                            <option value="Vinícius Jr.">Vinícius Jr.</option>
+                            <option value="Michael Olise">Michael Olise</option>
+                            <option value="otro">Otro (Escribir nombre)...</option>
+                        </select>
+
+                        <!-- Input texto condicional -->
+                        <div id="spec-goleador-input-container" class="hidden mt-3 animate-slideDown">
+                            <input type="text" id="spec-goleador-input" placeholder="Nombre completo del jugador"
+                                class="w-full px-4 py-3 bg-ink-800 border border-white/10 rounded-xl text-white text-sm focus:border-volt-400 focus:outline-none transition-colors placeholder-zinc-600">
+                        </div>
+                    </div>
+
+                    <!-- Equipo más Goleador -->
+                    <div class="flex flex-col">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-2.5">🔥 Equipo más Goleador (+300 pts)</label>
+                        <select id="spec-equipo-goleador" required class="w-full bg-ink-800 border border-white/10 text-white px-4 py-3 rounded-xl text-sm font-semibold focus:border-volt-400 focus:outline-none transition-colors">
+                            <option value="">Cargando equipos...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Footer / Submit -->
+                <div id="submit-footer" class="flex justify-end pt-5 border-t border-white/5">
+                    <button type="submit" id="btn-save-specials" class="btn-primary px-8 py-3 rounded-xl text-sm font-bold shadow-glow">
+                        Guardar Pronósticos Especiales
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Community Stats Section (visible when closed or admin) -->
+    <div id="community-section" class="hidden space-y-6 mt-8">
+        <!-- Section Header -->
+        <div class="animate-slideUp">
+            <p class="eyebrow mb-2 font-display text-xs tracking-[0.2em] text-aqua-400 uppercase">Comunidad</p>
+            <h2 class="font-display text-xl sm:text-2xl font-bold tracking-tight text-white">
+                Predicciones de la <span class="gradient-text">comunidad</span> 👥
+            </h2>
+            <p class="text-zinc-500 text-xs mt-2">Descubre qué ha votado cada jugador y cuáles son las predicciones más populares.</p>
+        </div>
+
+        <!-- Stats Cards: Most Voted -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-slideUp" style="animation-delay: 0.05s">
+            <div class="card p-5" id="stat-card-campeon"></div>
+            <div class="card p-5" id="stat-card-subcampeon"></div>
+            <div class="card p-5" id="stat-card-goleador"></div>
+            <div class="card p-5" id="stat-card-equipo-goleador"></div>
+        </div>
+
+        <!-- Semifinalistas Stats -->
+        <div class="card p-5 animate-slideUp" style="animation-delay: 0.1s" id="stat-card-semifinalistas"></div>
+
+        <!-- All Players Predictions Table -->
+        <div class="card p-5 sm:p-6 animate-slideUp" style="animation-delay: 0.15s">
+            <h3 class="font-display text-sm font-bold text-white mb-4">📋 Predicciones de cada jugador</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs">
+                    <thead>
+                        <tr class="border-b border-white/10">
+                            <th class="text-left py-2.5 px-2 text-zinc-500 font-black uppercase tracking-wider text-[9px]">Jugador</th>
+                            <th class="text-center py-2.5 px-1 text-zinc-500 font-black uppercase tracking-wider text-[9px]">🥇 Campeón</th>
+                            <th class="text-center py-2.5 px-1 text-zinc-500 font-black uppercase tracking-wider text-[9px]">🥈 Sub.</th>
+                            <th class="text-center py-2.5 px-1 text-zinc-500 font-black uppercase tracking-wider text-[9px]">⚽ Goleador</th>
+                            <th class="text-center py-2.5 px-1 text-zinc-500 font-black uppercase tracking-wider text-[9px]">🔥 Eq. Goleador</th>
+                        </tr>
+                    </thead>
+                    <tbody id="community-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script>
+    const token = localStorage.getItem('porra_token');
+    const user = JSON.parse(localStorage.getItem('porra_user') || '{}');
+    if (!token) window.location.href = '/';
+
+    let countdownInterval = null;
+    const topFavorites = [
+        "Kylian Mbappé", "Harry Kane", "Mikel Oyarzabal", "Erling Haaland", 
+        "Lionel Messi", "Cristiano Ronaldo", "Lamine Yamal", "Julián Álvarez", 
+        "Kai Havertz", "Raphinha", "Vinícius Jr.", "Michael Olise"
+    ];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadTeamsData();
+        await loadSpecialsState();
+        loadCommunityStats();
+    });
+
+    async function loadCommunityStats() {
+        try {
+            const res = await apiFetch('/api/predicciones-especiales/comunidad');
+            if (!res.ok) return; // Not available yet (403)
+            const data = await res.json();
+            
+            const section = document.getElementById('community-section');
+            section.classList.remove('hidden');
+            
+            const stats = data.estadisticas || {};
+            const jugadores = data.jugadores || [];
+            
+            // Render stat cards
+            renderStatCard('stat-card-campeon', '🥇 Campeón del Mundo', stats.campeon, true);
+            renderStatCard('stat-card-subcampeon', '🥈 Subcampeón', stats.subcampeon, true);
+            renderStatCard('stat-card-goleador', '⚽ Máximo Goleador', stats.maximo_goleador, false);
+            renderStatCard('stat-card-equipo-goleador', '🔥 Equipo más Goleador', stats.equipo_mas_goleador, true);
+            
+            // Semifinalistas
+            renderSemifinalistasCard(stats.semifinalistas);
+            
+            // Players table
+            const tbody = document.getElementById('community-table-body');
+            tbody.innerHTML = '';
+            jugadores.forEach((j, idx) => {
+                const row = document.createElement('tr');
+                row.className = `border-b border-white/5 ${idx % 2 === 0 ? 'bg-white/[0.01]' : ''}`;
+                row.innerHTML = `
+                    <td class="py-2.5 px-2 font-bold text-white whitespace-nowrap">${j.username}</td>
+                    <td class="py-2.5 px-1 text-center text-zinc-300">${j.campeon ? teamWithFlag(j.campeon) : '<span class="text-zinc-600">—</span>'}</td>
+                    <td class="py-2.5 px-1 text-center text-zinc-300">${j.subcampeon ? teamWithFlag(j.subcampeon) : '<span class="text-zinc-600">—</span>'}</td>
+                    <td class="py-2.5 px-1 text-center text-zinc-300">${j.maximo_goleador || '<span class="text-zinc-600">—</span>'}</td>
+                    <td class="py-2.5 px-1 text-center text-zinc-300">${j.equipo_mas_goleador ? teamWithFlag(j.equipo_mas_goleador) : '<span class="text-zinc-600">—</span>'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        } catch (err) {
+            console.error('Error loading community stats:', err);
+        }
+    }
+
+    function renderStatCard(containerId, title, statData, isTeam) {
+        const container = document.getElementById(containerId);
+        if (!statData || !statData.ranking || statData.ranking.length === 0) {
+            container.innerHTML = `
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-3">${title}</h4>
+                <p class="text-sm text-zinc-600">Sin votos aún</p>
+            `;
+            return;
+        }
+        
+        const top = statData.ranking[0];
+        const rest = statData.ranking.slice(1, 5);
+        
+        container.innerHTML = `
+            <h4 class="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-3">${title}</h4>
+            <div class="flex items-center gap-3 mb-3">
+                <span class="text-2xl">${isTeam ? getFlag(top.valor) : ''}</span>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-white truncate">${top.valor}</p>
+                    <p class="text-[10px] text-volt-400 font-black">${top.porcentaje}% de votos (${top.votos})</p>
+                </div>
+            </div>
+            <div class="flex flex-col gap-1.5">
+                ${rest.map((r, i) => `
+                    <div class="flex items-center justify-between text-[10px]">
+                        <span class="text-zinc-400 truncate">${i + 2}. ${isTeam ? teamWithFlag(r.valor) : r.valor}</span>
+                        <span class="text-zinc-500 font-bold ml-2 flex-shrink-0">${r.porcentaje}%</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function renderSemifinalistasCard(semiData) {
+        const container = document.getElementById('stat-card-semifinalistas');
+        if (!semiData || !semiData.ranking || semiData.ranking.length === 0) {
+            container.innerHTML = `
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-3">⚔️ Semifinalistas más votados</h4>
+                <p class="text-sm text-zinc-600">Sin votos aún</p>
+            `;
+            return;
+        }
+        
+        const topSemis = semiData.ranking.slice(0, 8);
+        container.innerHTML = `
+            <h4 class="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-3">⚔️ Semifinalistas más votados</h4>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                ${topSemis.map((s, i) => `
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg ${i < 4 ? 'bg-aqua-400/[0.05] border border-aqua-400/15' : 'bg-white/[0.02] border border-white/5'}">
+                        <span class="text-sm">${getFlag(s.valor)}</span>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-bold ${i < 4 ? 'text-white' : 'text-zinc-400'} truncate">${s.valor}</p>
+                            <p class="text-[9px] ${i < 4 ? 'text-aqua-300' : 'text-zinc-600'} font-bold">${s.votos} votos</p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    async function loadTeamsData() {
+        try {
+            const res = await apiFetch('/api/equipos');
+            const data = await res.json();
+            const teams = data.equipos || [];
+
+            const dropdowns = [
+                'spec-campeon',
+                'spec-subcampeon',
+                'spec-semi-1',
+                'spec-semi-2',
+                'spec-semi-3',
+                'spec-semi-4',
+                'spec-equipo-goleador'
+            ];
+
+            dropdowns.forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = '<option value="">Selecciona equipo...</option>';
+                    teams.forEach(team => {
+                        const opt = document.createElement('option');
+                        opt.value = team;
+                        opt.textContent = teamWithFlag(team);
+                        select.appendChild(opt);
+                    });
+                }
+            });
+        } catch (err) {
+            console.error('Error al cargar equipos:', err);
+            showToast('error', 'Error al cargar los equipos del torneo.');
+        }
+    }
+
+    async function loadSpecialsState() {
+        try {
+            const res = await apiFetch('/api/predicciones-especiales');
+            const data = await res.json();
+
+            const state = data.state;
+            const isClosed = state === 'closed';
+            const isLocked = state === 'locked' && !user.es_administrador;
+
+            // Manage visible containers
+            if (isLocked) {
+                document.getElementById('locked-banner').classList.remove('hidden');
+                document.getElementById('form-container').classList.add('hidden');
+                startUnlockCountdown(data.world_cup_start);
+            } else {
+                document.getElementById('locked-banner').classList.add('hidden');
+                document.getElementById('form-container').classList.remove('hidden');
+                
+                if (isClosed) {
+                    document.getElementById('closed-banner').classList.remove('hidden');
+                    document.getElementById('submit-footer').classList.add('hidden');
+                }
+                
+                // Load saved values if any
+                const preds = data.predicciones || {};
+                
+                if (preds.campeon) document.getElementById('spec-campeon').value = preds.campeon;
+                if (preds.subcampeon) document.getElementById('spec-subcampeon').value = preds.subcampeon;
+                
+                // Sync initial values for semi-1 and semi-2
+                validateSpecialsDropdowns();
+
+                if (preds.semifinalista_3) document.getElementById('spec-semi-3').value = preds.semifinalista_3;
+                if (preds.semifinalista_4) document.getElementById('spec-semi-4').value = preds.semifinalista_4;
+                if (preds.equipo_mas_goleador) document.getElementById('spec-equipo-goleador').value = preds.equipo_mas_goleador;
+                
+                // Goleador special load
+                if (preds.maximo_goleador) {
+                    const value = preds.maximo_goleador;
+                    const select = document.getElementById('spec-goleador-select');
+                    const inputContainer = document.getElementById('spec-goleador-input-container');
+                    const input = document.getElementById('spec-goleador-input');
+                    
+                    if (topFavorites.includes(value)) {
+                        select.value = value;
+                        inputContainer.classList.add('hidden');
+                        input.value = '';
+                    } else {
+                        select.value = 'otro';
+                        inputContainer.classList.remove('hidden');
+                        input.value = value;
+                    }
+                }
+
+                // If closed and not admin, disable all inputs
+                if (isClosed && !user.es_administrador) {
+                    const inputs = document.getElementById('specials-form').querySelectorAll('select, input');
+                    inputs.forEach(el => el.disabled = true);
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('error', 'Error al consultar el estado de los especiales.');
+        }
+    }
+
+    function validateSpecialsDropdowns(changedId) {
+        const campeon = document.getElementById('spec-campeon').value;
+        const subcampeon = document.getElementById('spec-subcampeon').value;
+        const semi1 = document.getElementById('spec-semi-1');
+        const semi2 = document.getElementById('spec-semi-2');
+        const semi3 = document.getElementById('spec-semi-3');
+        const semi4 = document.getElementById('spec-semi-4');
+
+        if (campeon) {
+            let opt = semi1.querySelector(`option[value="${campeon}"]`);
+            if (!opt) {
+                opt = document.createElement('option');
+                opt.value = campeon;
+                opt.textContent = teamWithFlag(campeon);
+                semi1.appendChild(opt);
+            }
+            semi1.value = campeon;
+        } else {
+            semi1.value = "";
+        }
+
+        if (subcampeon) {
+            let opt = semi2.querySelector(`option[value="${subcampeon}"]`);
+            if (!opt) {
+                opt = document.createElement('option');
+                opt.value = subcampeon;
+                opt.textContent = teamWithFlag(subcampeon);
+                semi2.appendChild(opt);
+            }
+            semi2.value = subcampeon;
+        } else {
+            semi2.value = "";
+        }
+
+        if (changedId === 'spec-campeon') {
+            if (campeon && campeon === subcampeon) {
+                document.getElementById('spec-subcampeon').value = "";
+                semi2.value = "";
+                showToast('info', 'El subcampeón no puede ser el mismo que el campeón.');
+            }
+            if (campeon && campeon === semi3.value) semi3.value = "";
+            if (campeon && campeon === semi4.value) semi4.value = "";
+        }
+        
+        if (changedId === 'spec-subcampeon') {
+            if (subcampeon && subcampeon === campeon) {
+                document.getElementById('spec-campeon').value = "";
+                semi1.value = "";
+                showToast('info', 'El campeón no puede ser el mismo que el subcampeón.');
+            }
+            if (subcampeon && subcampeon === semi3.value) semi3.value = "";
+            if (subcampeon && subcampeon === semi4.value) semi4.value = "";
+        }
+
+        if (changedId === 'spec-semi-3') {
+            const val = semi3.value;
+            if (val && (val === campeon || val === subcampeon)) {
+                semi3.value = "";
+                showToast('info', 'Este equipo ya está clasificado como semifinalista por ser Campeón o Subcampeón.');
+            } else if (val && val === semi4.value) {
+                semi4.value = "";
+                showToast('info', 'No puedes elegir el mismo semifinalista dos veces.');
+            }
+        }
+
+        if (changedId === 'spec-semi-4') {
+            const val = semi4.value;
+            if (val && (val === campeon || val === subcampeon)) {
+                semi4.value = "";
+                showToast('info', 'Este equipo ya está clasificado como semifinalista por ser Campeón o Subcampeón.');
+            } else if (val && val === semi3.value) {
+                semi3.value = "";
+                showToast('info', 'No puedes elegir el mismo semifinalista dos veces.');
+            }
+        }
+    }
+
+    function handleGoleadorChange() {
+        const select = document.getElementById('spec-goleador-select');
+        const container = document.getElementById('spec-goleador-input-container');
+        const input = document.getElementById('spec-goleador-input');
+        
+        if (select.value === 'otro') {
+            container.classList.remove('hidden');
+            input.required = true;
+            input.focus();
+        } else {
+            container.classList.add('hidden');
+            input.required = false;
+            input.value = '';
+        }
+    }
+
+    function startUnlockCountdown(targetIso) {
+        if (countdownInterval) clearInterval(countdownInterval);
+        const targetDate = new Date(targetIso);
+
+        function update() {
+            const now = new Date();
+            const diff = targetDate - now;
+
+            if (diff <= 0) {
+                clearInterval(countdownInterval);
+                loadSpecialsState();
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('lock-days').textContent = String(days).padStart(2, '0');
+            document.getElementById('lock-hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('lock-minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('lock-seconds').textContent = String(seconds).padStart(2, '0');
+        }
+
+        update();
+        countdownInterval = setInterval(update, 1000);
+    }
+
+    async function saveSpecialPredictions(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-save-specials');
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+
+        // Goleador parsing
+        const selectVal = document.getElementById('spec-goleador-select').value;
+        const textVal = document.getElementById('spec-goleador-input').value.trim();
+        const maximoGoleador = selectVal === 'otro' ? textVal : selectVal;
+
+        if (!maximoGoleador) {
+            showToast('error', 'Por favor selecciona o escribe un máximo goleador.');
+            btn.disabled = false;
+            btn.textContent = 'Guardar Pronósticos Especiales';
+            return;
+        }
+
+        const body = {
+            campeon: document.getElementById('spec-campeon').value,
+            subcampeon: document.getElementById('spec-subcampeon').value,
+            semifinalista_1: document.getElementById('spec-semi-1').value,
+            semifinalista_2: document.getElementById('spec-semi-2').value,
+            semifinalista_3: document.getElementById('spec-semi-3').value,
+            semifinalista_4: document.getElementById('spec-semi-4').value,
+            maximo_goleador: maximoGoleador,
+            equipo_mas_goleador: document.getElementById('spec-equipo-goleador').value
+        };
+
+        try {
+            const res = await apiFetch('/api/predicciones-especiales', {
+                method: 'POST',
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast('success', data.message);
+                await loadSpecialsState();
+            } else {
+                showToast('error', data.error);
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('error', 'Error al guardar pronósticos.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Guardar Pronósticos Especiales';
+        }
+    }
+</script>
+{% endblock %}

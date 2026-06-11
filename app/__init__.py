@@ -66,6 +66,10 @@ def create_app() -> Flask:
     def cuadro():
         return render_template("cuadro.html")
 
+    @app.route("/especiales")
+    def especiales():
+        return render_template("especiales.html")
+
     @app.route("/admin")
     def admin_panel():
         return render_template("admin.html")
@@ -77,11 +81,11 @@ def create_app() -> Flask:
 
     # ── Crear tablas y usuario admin por defecto ──
     with app.app_context():
-        from app.models import Usuario, Partido, Prediccion  # noqa: F401
+        from app.models import Usuario, Partido, Prediccion, PrediccionEspecial  # noqa: F401
 
         db.create_all()
         _create_default_admin(app)
-        _create_default_spectator(app)
+        # _create_default_spectator(app)  # Desactivado para eliminar usuario invitado
         _seed_initial_matches(app)
 
     # ── Iniciar Scheduler ──
@@ -102,7 +106,7 @@ def _create_default_admin(app: Flask) -> None:
     admin_password = app.config["ADMIN_PASSWORD"]
 
     if not Usuario.query.filter_by(username=admin_username).first():
-        admin = Usuario(username=admin_username, es_administrador=True)
+        admin = Usuario(username=admin_username, es_administrador=True, aprobado=True)
         admin.set_password(admin_password)
         db.session.add(admin)
         db.session.commit()
@@ -205,11 +209,11 @@ def _setup_scheduler(app: Flask) -> None:
         scheduler.add_job(
             sync_cuotas_job,
             "interval",
-            hours=6,
+            hours=12,
             id="sync_cuotas",
             replace_existing=True,
         )
-        logger.info("📅 Job programado: sync_cuotas cada 6 horas.")
+        logger.info("📅 Job programado: sync_cuotas cada 12 horas.")
 
     if app.config.get("FOOTBALL_API_KEY"):
         scheduler.add_job(
