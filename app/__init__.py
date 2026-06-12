@@ -225,6 +225,57 @@ def _setup_scheduler(app: Flask) -> None:
         )
         logger.info("📅 Job programado: check_resultados cada 15 minutos.")
 
+    # ── Jobs de WhatsApp ──────────────────────────────────────────────────────
+    if app.config.get("WHATSAPP_GROUP_JID"):
+
+        def whatsapp_recordatorio_job():
+            """Cada hora: avisa a quien no ha entregado pronósticos de la jornada abierta."""
+            with app.app_context():
+                try:
+                    from app.services.whatsapp_jobs import check_and_notify_pendientes
+                    check_and_notify_pendientes()
+                except Exception as e:
+                    logger.error(f"Error en whatsapp_recordatorio_job: {e}")
+
+        def whatsapp_ranking_manana_job():
+            """Cada mañana a las 9:00 manda el ranking."""
+            with app.app_context():
+                try:
+                    from app.services.whatsapp_jobs import send_ranking_diario
+                    send_ranking_diario()
+                except Exception as e:
+                    logger.error(f"Error en whatsapp_ranking_job: {e}")
+
+        def whatsapp_partidos_proximos_job():
+            """Cada 15 min: avisa si algún partido empieza en <35 min."""
+            with app.app_context():
+                try:
+                    from app.services.whatsapp_jobs import notify_partidos_proximos
+                    notify_partidos_proximos()
+                except Exception as e:
+                    logger.error(f"Error en whatsapp_partidos_proximos_job: {e}")
+
+        def whatsapp_resultados_job():
+            """Cada 10 min: notifica resultados de partidos recién finalizados."""
+            with app.app_context():
+                try:
+                    from app.services.whatsapp_jobs import notify_resultados_recientes
+                    notify_resultados_recientes()
+                except Exception as e:
+                    logger.error(f"Error en whatsapp_resultados_job: {e}")
+
+        scheduler.add_job(whatsapp_recordatorio_job, "interval", hours=1,
+                          id="wa_recordatorio", replace_existing=True)
+        scheduler.add_job(whatsapp_ranking_manana_job, "cron", hour=9, minute=0,
+                          id="wa_ranking", replace_existing=True)
+        scheduler.add_job(whatsapp_partidos_proximos_job, "interval", minutes=15,
+                          id="wa_partidos_proximos", replace_existing=True)
+        scheduler.add_job(whatsapp_resultados_job, "interval", minutes=10,
+                          id="wa_resultados", replace_existing=True)
+        logger.info("📱 Jobs de WhatsApp programados (group_jid configurado).")
+    else:
+        logger.info("📵 WhatsApp desactivado — configura WHATSAPP_GROUP_JID en .env")
+
     # Arrancar scheduler
     if not scheduler.running:
         scheduler.start()

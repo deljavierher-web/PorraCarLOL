@@ -52,6 +52,10 @@ class Config:
     TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
     TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 
+    # WhatsApp (bridge local whatsapp-mcp en localhost:8080)
+    # Formato del JID: 34XXXXXXXXX-XXXXXXXXXX@g.us  (se obtiene tras escanear QR)
+    WHATSAPP_GROUP_JID = os.environ.get("WHATSAPP_GROUP_JID", "")
+
     # Multiplicadores por fase del torneo
     # Cada jornada tiene un multiplicador que escala los puntos base (cuota × 10)
     PHASE_MULTIPLIERS = {
