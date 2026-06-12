@@ -48,6 +48,51 @@
         </div>
     </div>
 
+    <!-- Countdown to CLOSE (visible while open) -->
+    <div id="close-countdown-banner" class="hidden mb-6 animate-slideUp" style="animation-delay: 0.05s">
+        <div class="card p-4 !border-volt-400/20 bg-volt-400/[0.03]">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="text-xl">⏳</span>
+                    <div>
+                        <h4 class="text-sm font-bold text-white">Plazo abierto — cierra cuando empiece la Jornada 2</h4>
+                        <p class="text-xs text-zinc-500 mt-0.5">Una vez enviado, no podrás modificar tus pronósticos.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div class="flex flex-col items-center">
+                        <span id="close-days" class="bg-ink-700 border border-volt-400/20 text-volt-400 font-display font-black text-lg px-3 py-1.5 rounded-lg">00</span>
+                        <span class="text-[8px] text-zinc-600 font-semibold uppercase mt-1">Días</span>
+                    </div>
+                    <span class="text-zinc-600 font-bold mb-4">:</span>
+                    <div class="flex flex-col items-center">
+                        <span id="close-hours" class="bg-ink-700 border border-volt-400/20 text-volt-400 font-display font-black text-lg px-3 py-1.5 rounded-lg">00</span>
+                        <span class="text-[8px] text-zinc-600 font-semibold uppercase mt-1">Horas</span>
+                    </div>
+                    <span class="text-zinc-600 font-bold mb-4">:</span>
+                    <div class="flex flex-col items-center">
+                        <span id="close-minutes" class="bg-ink-700 border border-volt-400/20 text-volt-400 font-display font-black text-lg px-3 py-1.5 rounded-lg">00</span>
+                        <span class="text-[8px] text-zinc-600 font-semibold uppercase mt-1">Mins</span>
+                    </div>
+                    <span class="text-zinc-600 font-bold mb-4">:</span>
+                    <div class="flex flex-col items-center">
+                        <span id="close-seconds" class="bg-ink-700 border border-volt-400/20 text-volt-400 font-display font-black text-lg px-3 py-1.5 rounded-lg">00</span>
+                        <span class="text-[8px] text-zinc-600 font-semibold uppercase mt-1">Segs</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submitted / Read-Only Banner (visible after sending, period still open) -->
+    <div id="submitted-banner" class="hidden mb-6 card p-4 !border-volt-400/25 bg-volt-400/[0.03] flex items-center gap-3 animate-slideUp">
+        <span class="text-xl flex-shrink-0">✅</span>
+        <div class="min-w-0">
+            <h4 class="text-sm font-bold text-white">Pronósticos enviados y bloqueados</h4>
+            <p class="text-xs text-zinc-500 mt-0.5">Ya no puedes modificarlos. Aquí tienes tu selección final.</p>
+        </div>
+    </div>
+
     <!-- Closed / Read-Only Banner (Visible when closed) -->
     <div id="closed-banner" class="hidden mb-6 card p-4 !border-orange-500/20 bg-orange-500/[0.02] flex items-center gap-3 animate-slideUp">
         <span class="text-xl flex-shrink-0">🔒</span>
@@ -168,7 +213,7 @@
             <h2 class="font-display text-xl sm:text-2xl font-bold tracking-tight text-white">
                 Predicciones de la <span class="gradient-text">comunidad</span> 👥
             </h2>
-            <p class="text-zinc-500 text-xs mt-2">Descubre qué ha votado cada jugador y cuáles son las predicciones más populares.</p>
+            <p class="text-zinc-500 text-xs mt-2">Has enviado tus pronósticos — ya puedes ver qué ha elegido el resto del grupo.</p>
         </div>
 
         <!-- Stats Cards: Most Voted -->
@@ -364,64 +409,89 @@
             const data = await res.json();
 
             const state = data.state;
+            const submitted = data.submitted || false;
             const isClosed = state === 'closed';
             const isLocked = state === 'locked' && !user.es_administrador;
+            const isReadOnly = isClosed || (submitted && !user.es_administrador);
 
-            // Manage visible containers
+            // Banner visibility
+            document.getElementById('locked-banner').classList.toggle('hidden', !isLocked);
+            document.getElementById('submitted-banner').classList.toggle('hidden', !(submitted && !isClosed && !isLocked));
+            document.getElementById('closed-banner').classList.toggle('hidden', !isClosed);
+            document.getElementById('close-countdown-banner').classList.toggle('hidden', isLocked || isClosed || submitted);
+            document.getElementById('form-container').classList.toggle('hidden', isLocked);
+
             if (isLocked) {
-                document.getElementById('locked-banner').classList.remove('hidden');
-                document.getElementById('form-container').classList.add('hidden');
                 startUnlockCountdown(data.world_cup_start);
-            } else {
-                document.getElementById('locked-banner').classList.add('hidden');
-                document.getElementById('form-container').classList.remove('hidden');
-                
-                if (isClosed) {
-                    document.getElementById('closed-banner').classList.remove('hidden');
-                    document.getElementById('submit-footer').classList.add('hidden');
-                }
-                
-                // Load saved values if any
-                const preds = data.predicciones || {};
-                
-                if (preds.campeon) document.getElementById('spec-campeon').value = preds.campeon;
-                if (preds.subcampeon) document.getElementById('spec-subcampeon').value = preds.subcampeon;
-                
-                // Sync initial values for semi-1 and semi-2
-                validateSpecialsDropdowns();
+                return;
+            }
 
-                if (preds.semifinalista_3) document.getElementById('spec-semi-3').value = preds.semifinalista_3;
-                if (preds.semifinalista_4) document.getElementById('spec-semi-4').value = preds.semifinalista_4;
-                if (preds.equipo_mas_goleador) document.getElementById('spec-equipo-goleador').value = preds.equipo_mas_goleador;
-                
-                // Goleador special load
-                if (preds.maximo_goleador) {
-                    const value = preds.maximo_goleador;
-                    const select = document.getElementById('spec-goleador-select');
-                    const inputContainer = document.getElementById('spec-goleador-input-container');
-                    const input = document.getElementById('spec-goleador-input');
-                    
-                    if (topFavorites.includes(value)) {
-                        select.value = value;
-                        inputContainer.classList.add('hidden');
-                        input.value = '';
-                    } else {
-                        select.value = 'otro';
-                        inputContainer.classList.remove('hidden');
-                        input.value = value;
-                    }
-                }
+            // Countdown to close (only when open and not yet submitted)
+            if (!isClosed && !submitted) {
+                startCloseCountdown(data.jornada_2_start);
+            }
 
-                // If closed and not admin, disable all inputs
-                if (isClosed && !user.es_administrador) {
-                    const inputs = document.getElementById('specials-form').querySelectorAll('select, input');
-                    inputs.forEach(el => el.disabled = true);
+            // Hide submit button if read-only
+            if (isReadOnly) {
+                document.getElementById('submit-footer').classList.add('hidden');
+            }
+
+            // Load saved values
+            const preds = data.predicciones || {};
+            if (preds.campeon) document.getElementById('spec-campeon').value = preds.campeon;
+            if (preds.subcampeon) document.getElementById('spec-subcampeon').value = preds.subcampeon;
+            validateSpecialsDropdowns();
+            if (preds.semifinalista_3) document.getElementById('spec-semi-3').value = preds.semifinalista_3;
+            if (preds.semifinalista_4) document.getElementById('spec-semi-4').value = preds.semifinalista_4;
+            if (preds.equipo_mas_goleador) document.getElementById('spec-equipo-goleador').value = preds.equipo_mas_goleador;
+
+            if (preds.maximo_goleador) {
+                const value = preds.maximo_goleador;
+                const select = document.getElementById('spec-goleador-select');
+                const inputContainer = document.getElementById('spec-goleador-input-container');
+                const input = document.getElementById('spec-goleador-input');
+                if (topFavorites.includes(value)) {
+                    select.value = value;
+                    inputContainer.classList.add('hidden');
+                    input.value = '';
+                } else {
+                    select.value = 'otro';
+                    inputContainer.classList.remove('hidden');
+                    input.value = value;
                 }
+            }
+
+            // Disable all inputs if read-only
+            if (isReadOnly && !user.es_administrador) {
+                document.getElementById('specials-form').querySelectorAll('select, input').forEach(el => el.disabled = true);
             }
         } catch (err) {
             console.error(err);
             showToast('error', 'Error al consultar el estado de los especiales.');
         }
+    }
+
+    function startCloseCountdown(targetIso) {
+        if (countdownInterval) clearInterval(countdownInterval);
+        const targetDate = new Date(targetIso);
+        function update() {
+            const diff = targetDate - new Date();
+            if (diff <= 0) {
+                clearInterval(countdownInterval);
+                loadSpecialsState();
+                return;
+            }
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            document.getElementById('close-days').textContent = String(d).padStart(2, '0');
+            document.getElementById('close-hours').textContent = String(h).padStart(2, '0');
+            document.getElementById('close-minutes').textContent = String(m).padStart(2, '0');
+            document.getElementById('close-seconds').textContent = String(s).padStart(2, '0');
+        }
+        update();
+        countdownInterval = setInterval(update, 1000);
     }
 
     function validateSpecialsDropdowns(changedId) {
@@ -582,8 +652,17 @@
             });
             const data = await res.json();
             if (res.ok) {
-                showToast('success', data.message);
+                showToast('success', '¡Pronósticos enviados y bloqueados! Ya no se pueden modificar.');
                 await loadSpecialsState();
+                // Show community section now that user has submitted
+                await loadCommunityStats();
+                // Scroll to community
+                setTimeout(() => {
+                    const sec = document.getElementById('community-section');
+                    if (sec && !sec.classList.contains('hidden')) {
+                        sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 400);
             } else {
                 showToast('error', data.error);
             }

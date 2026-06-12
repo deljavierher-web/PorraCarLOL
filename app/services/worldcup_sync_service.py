@@ -226,8 +226,14 @@ def sync_worldcup_data() -> dict:
 
             # Marcador si ha finalizado
             finished_api = str(game.get("finished", "FALSE")).upper() == "TRUE"
-            
-            if finished_api and not partido.finalizado:
+
+            # Guardia: nunca marcar finalizado si la fecha del partido es futura
+            # (la API externa a veces devuelve finished=TRUE en partidos no jugados)
+            from datetime import timedelta
+            partido_fecha_utc = partido.fecha_partido.replace(tzinfo=timezone.utc) if partido.fecha_partido.tzinfo is None else partido.fecha_partido
+            partido_ya_debio_terminar = partido_fecha_utc + timedelta(hours=3) < datetime.now(timezone.utc)
+
+            if finished_api and not partido.finalizado and partido_ya_debio_terminar:
                 try:
                     home_score = int(game.get("home_score", 0) or 0)
                     away_score = int(game.get("away_score", 0) or 0)

@@ -538,6 +538,7 @@ def obtener_predicciones_especiales():
     from app.models.prediccion_especial import PrediccionEspecial
     preds = PrediccionEspecial.query.filter_by(usuario_id=user_id).all()
     preds_dict = {p.categoria: p.valor_pronosticado for p in preds}
+    submitted = len(preds) > 0
 
     # Time window evaluation
     world_cup_start, j2_start = get_specials_time_window()
@@ -554,6 +555,7 @@ def obtener_predicciones_especiales():
 
     return jsonify({
         "predicciones": preds_dict,
+        "submitted": submitted,
         "state": state,
         "world_cup_start": world_cup_start.isoformat(),
         "jornada_2_start": j2_start.isoformat(),
@@ -580,6 +582,12 @@ def guardar_predicciones_especiales():
             return jsonify({"error": "La votación de pronósticos especiales aún está bloqueada."}), 403
         elif now >= j2_start:
             return jsonify({"error": "La votación de pronósticos especiales ya se ha cerrado."}), 403
+
+        # Bloqueo tras primer envío: si ya tiene predicciones, no puede modificar
+        from app.models.prediccion_especial import PrediccionEspecial as PE_check
+        ya_enviado = PE_check.query.filter_by(usuario_id=user_id).first()
+        if ya_enviado:
+            return jsonify({"error": "Ya has enviado tus pronósticos especiales. No se pueden modificar."}), 403
 
     data = request.get_json() or {}
     
@@ -677,6 +685,7 @@ def obtener_especiales_comunidad():
     de qué opción ha sido la más votada por categoría.
     Solo accesible cuando el estado de especiales es 'closed' o para admins.
     """
+    user_id = int(get_jwt_identity())
     claims = get_jwt()
     es_admin = claims.get("es_admin", False)
 
@@ -686,11 +695,14 @@ def obtener_especiales_comunidad():
     from datetime import timezone
     now = datetime.datetime.now(timezone.utc)
 
-    if now < j2_start and not es_admin:
-        return jsonify({"error": "Las predicciones de la comunidad estarán disponibles cuando cierre el plazo de votación."}), 403
-
     from app.models.prediccion_especial import PrediccionEspecial
     from app.models.usuario import Usuario
+
+    # Accesible si: admin, período cerrado, O el propio usuario ya envió sus predicciones
+    if now < j2_start and not es_admin:
+        usuario_ya_envio = PrediccionEspecial.query.filter_by(usuario_id=user_id).first()
+        if not usuario_ya_envio:
+            return jsonify({"error": "Las predicciones de la comunidad estarán disponibles cuando envíes tus pronósticos."}), 403
 
     # Get all non-admin users who have predictions
     usuarios = Usuario.query.filter_by(es_administrador=False).all()
