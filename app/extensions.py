@@ -22,4 +22,13 @@ bcrypt = Bcrypt()
 cors = CORS()
 
 # Scheduler para tareas en segundo plano
-scheduler = BackgroundScheduler(daemon=True)
+# misfire_grace_time: si un job no se ejecutó a su hora (reinicio, suspensión breve),
+#   aún se dispara si volvemos dentro de esta ventana (1h) en lugar de saltárselo.
+# coalesce: si se acumularon varias ejecuciones perdidas, ejecuta solo una.
+scheduler = BackgroundScheduler(
+    daemon=True,
+    job_defaults={
+        "misfire_grace_time": 3600,
+        "coalesce": True,
+    },
+)

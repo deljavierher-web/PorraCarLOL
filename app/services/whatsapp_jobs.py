@@ -70,11 +70,11 @@ def check_and_notify_pendientes():
 
 def send_ranking_diario():
     """Manda el ranking completo cada mañana a las 9:00."""
-    from app.services.scoring_service import get_ranking
+    from app.services.scoring_service import get_ranking_general
     from app.services.whatsapp_service import notify_ranking_diario
 
     try:
-        ranking = get_ranking()
+        ranking = get_ranking_general()
         if ranking:
             notify_ranking_diario(ranking)
     except Exception as e:

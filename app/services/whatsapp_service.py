@@ -97,7 +97,7 @@ def notify_ranking_diario(ranking: list[dict]):
     lineas = ["🏆 *Ranking PorraCarLOL*\n"]
     for i, entry in enumerate(ranking[:10]):
         medalla = medallas[i] if i < 3 else f"{i+1}."
-        lineas.append(f"{medalla} {entry['username']} — {entry['puntos']:.1f} pts")
+        lineas.append(f"{medalla} {entry['username']} — {entry['puntos_totales']:.1f} pts")
     lineas.append(f"\n🔗 porra.esaria.es/dashboard")
     send_whatsapp("\n".join(lineas))
 
