@@ -229,7 +229,6 @@ def sync_worldcup_data() -> dict:
 
             # Guardia: nunca marcar finalizado si la fecha del partido es futura
             # (la API externa a veces devuelve finished=TRUE en partidos no jugados)
-            from datetime import timedelta
             partido_fecha_utc = partido.fecha_partido.replace(tzinfo=timezone.utc) if partido.fecha_partido.tzinfo is None else partido.fecha_partido
             partido_ya_debio_terminar = partido_fecha_utc + timedelta(hours=3) < datetime.now(timezone.utc)
 
