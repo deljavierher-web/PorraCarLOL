@@ -3,6 +3,9 @@
 venv/
 .venv/
 
+# Datos personales (teléfonos para menciones de WhatsApp)
+telefonos.json
+
 # Database
 instance/
 *.db
