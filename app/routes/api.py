@@ -516,14 +516,28 @@ def listar_equipos():
 
 def get_specials_time_window():
     from app.models.partido import Partido
+    from flask import current_app
     first_j1 = Partido.query.filter_by(jornada=1).order_by(Partido.fecha_partido.asc()).first()
     first_j2 = Partido.query.filter_by(jornada=2).order_by(Partido.fecha_partido.asc()).first()
-    
+
     import datetime
     from datetime import timezone
-    
+
     world_cup_start = first_j1.fecha_partido.replace(tzinfo=timezone.utc) if first_j1 else datetime.datetime(2026, 6, 11, 16, 0, 0, tzinfo=timezone.utc)
     jornada_2_start = first_j2.fecha_partido.replace(tzinfo=timezone.utc) if first_j2 else datetime.datetime(2026, 6, 18, 14, 0, 0, tzinfo=timezone.utc)
+
+    # Override manual del cierre (ISO 8601 UTC) vía ESPECIALES_CIERRE en .env.
+    # Permite adelantar el cierre sin tocar código (p.ej. anti-tramposos).
+    cierre_override = current_app.config.get("ESPECIALES_CIERRE", "")
+    if cierre_override:
+        try:
+            override_dt = datetime.datetime.fromisoformat(cierre_override)
+            if override_dt.tzinfo is None:
+                override_dt = override_dt.replace(tzinfo=timezone.utc)
+            jornada_2_start = override_dt
+        except ValueError:
+            pass
+
     return world_cup_start, jornada_2_start
 
 

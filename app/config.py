@@ -56,6 +56,10 @@ class Config:
     # Formato del JID: 34XXXXXXXXX-XXXXXXXXXX@g.us  (se obtiene tras escanear QR)
     WHATSAPP_GROUP_JID = os.environ.get("WHATSAPP_GROUP_JID", "")
 
+    # Override manual del cierre de pronósticos especiales (ISO 8601 UTC).
+    # Si está vacío, el cierre es el inicio de la Jornada 2. Ej: 2026-06-15T16:00:00+00:00
+    ESPECIALES_CIERRE = os.environ.get("ESPECIALES_CIERRE", "")
+
     # Multiplicadores por fase del torneo
     # Cada jornada tiene un multiplicador que escala los puntos base (cuota × 10)
     PHASE_MULTIPLIERS = {
