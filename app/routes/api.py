@@ -462,11 +462,79 @@ def toggle_comodin(pred_id: int):
 
         # Asignar nuevo comodín
         pred.es_comodin = True
+        # Excluyente con "doble o mitad" en el mismo partido
+        pred.es_doble_mitad = False
 
     db.session.commit()
 
     return jsonify({
         "message": "Comodín " + ("asignado" if pred.es_comodin else "quitado") + ".",
+        "pronostico": pred.to_dict(),
+    }), 200
+
+
+@api_bp.route("/pronostico/<int:pred_id>/doble-mitad", methods=["PUT"])
+@jwt_required()
+def toggle_doble_mitad(pred_id: int):
+    """
+    Asignar/quitar el potenciador "Doble o mitad" a un pronóstico.
+    Solo 1 por jornada. Excluyente con el comodín en el mismo partido.
+    """
+    user_id = int(get_jwt_identity())
+    claims = get_jwt()
+    if claims.get("username") == "invitado":
+        return jsonify({"error": "Acceso de invitado de solo lectura. No puedes modificar nada."}), 403
+
+    pred = Prediccion.query.get(pred_id)
+    if not pred or pred.usuario_id != user_id:
+        return jsonify({"error": "Pronóstico no encontrado."}), 404
+
+    if pred.enviado:
+        return jsonify({"error": "Este pronóstico ya ha sido enviado y bloqueado."}), 403
+
+    partido = Partido.query.get(pred.partido_id)
+    if not partido:
+        return jsonify({"error": "Partido asociado no encontrado."}), 404
+
+    es_admin = claims.get("es_admin", False)
+
+    if partido.jornada >= 4 and not es_admin:
+        return jsonify({"error": "Las eliminatorias (Fase 4 en adelante) están bloqueadas temporalmente."}), 403
+
+    if not check_prev_jornadas_started(partido.jornada) and not es_admin:
+        return jsonify({"error": f"La Fase {partido.jornada} no está abierta."}), 403
+
+    if partido.ha_comenzado:
+        return jsonify({"error": "El partido ya ha comenzado. No puedes cambiarlo."}), 403
+
+    jornada = partido.jornada
+
+    if pred.es_doble_mitad:
+        # Quitar
+        pred.es_doble_mitad = False
+    else:
+        # Quitar cualquier otro "doble o mitad" de la misma jornada
+        otros = (
+            db.session.query(Prediccion)
+            .join(Partido, Prediccion.partido_id == Partido.id)
+            .filter(
+                Prediccion.usuario_id == user_id,
+                Partido.jornada == jornada,
+                Prediccion.es_doble_mitad == True,  # noqa: E712
+            )
+            .all()
+        )
+        for o in otros:
+            o.es_doble_mitad = False
+
+        pred.es_doble_mitad = True
+        # Excluyente con el comodín en el mismo partido
+        pred.es_comodin = False
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Doble o mitad " + ("activado" if pred.es_doble_mitad else "quitado") + ".",
         "pronostico": pred.to_dict(),
     }), 200
 

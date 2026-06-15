@@ -85,6 +85,7 @@ def create_app() -> Flask:
 
         db.create_all()
         _migrate_resultado_notificado(app)
+        _migrate_columna_bool("predicciones", "es_doble_mitad")
         _create_default_admin(app)
         # _create_default_spectator(app)  # Desactivado para eliminar usuario invitado
         _seed_initial_matches(app)
@@ -132,6 +133,28 @@ def _migrate_resultado_notificado(app: Flask) -> None:
         logger.info("Migración: columna 'resultado_notificado' añadida y backfill aplicado.")
     except Exception as e:
         logger.error(f"Error en migración resultado_notificado: {e}")
+
+
+def _migrate_columna_bool(tabla: str, columna: str) -> None:
+    """Añade una columna BOOLEAN NOT NULL DEFAULT false si no existe (SQLite/Postgres)."""
+    from sqlalchemy import inspect, text
+
+    inspector = inspect(db.engine)
+    columnas = [c["name"] for c in inspector.get_columns(tabla)]
+    if columna in columnas:
+        return
+
+    dialecto = db.engine.dialect.name
+    default_false = "0" if dialecto == "sqlite" else "false"
+    try:
+        with db.engine.begin() as conn:
+            conn.execute(text(
+                f"ALTER TABLE {tabla} ADD COLUMN {columna} "
+                f"BOOLEAN NOT NULL DEFAULT {default_false}"
+            ))
+        logger.info(f"Migración: columna '{columna}' añadida a '{tabla}'.")
+    except Exception as e:
+        logger.error(f"Error en migración {columna}: {e}")
 
 
 def _create_default_admin(app: Flask) -> None:

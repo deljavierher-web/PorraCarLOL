@@ -169,14 +169,24 @@ def calculate_points(partido_id: int) -> int:
     phase_mult = get_phase_multiplier(partido.jornada)
 
     for pred in predicciones:
+        cuota_pick = cuotas.get(pred.pronostico, 1.0)
+        base = cuota_pick * 10 * phase_mult
         if pred.pronostico == partido.resultado_real:
-            puntos = cuotas.get(pred.pronostico, 1.0) * 10 * phase_mult
-            if pred.es_comodin:
+            puntos = base
+            if pred.es_doble_mitad:
+                # Doble o mitad: acierto = base x2 (excluyente con comodín)
+                puntos = base * 2
+            elif pred.es_comodin:
                 mult = wildcard_multipliers.get(pred.usuario_id, 2.0)
                 puntos *= mult
             pred.puntos_ganados = round(puntos, 2)
         else:
-            pred.puntos_ganados = 0.0
+            if pred.es_doble_mitad and cuota_pick > 1.0:
+                # Penalización EV-neutra: -base/(cuota-1). Cuanto más favorito el
+                # pick fallado, mayor el castigo. Hace que usarlo sea neutro de media.
+                pred.puntos_ganados = round(-(base / (cuota_pick - 1)), 2)
+            else:
+                pred.puntos_ganados = 0.0
 
     db.session.commit()
     return len(predicciones)

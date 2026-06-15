@@ -19,6 +19,9 @@ class Prediccion(db.Model):
     )
     pronostico = db.Column(db.String(1), nullable=False)  # "1", "X", "2"
     es_comodin = db.Column(db.Boolean, default=False, nullable=False)
+    # "Doble o mitad": acierto x2; fallo resta base/(cuota-1) (penalización EV-neutra).
+    # Excluyente con el comodín en el mismo partido; 1 por jornada.
+    es_doble_mitad = db.Column(db.Boolean, default=False, nullable=False)
     puntos_ganados = db.Column(db.Float, default=0.0, nullable=False)
     enviado = db.Column(db.Boolean, default=False, nullable=False)
     timestamp = db.Column(
@@ -41,6 +44,7 @@ class Prediccion(db.Model):
             "partido_id": self.partido_id,
             "pronostico": self.pronostico,
             "es_comodin": self.es_comodin,
+            "es_doble_mitad": self.es_doble_mitad,
             "puntos_ganados": self.puntos_ganados,
             "enviado": self.enviado,
             "timestamp": self.timestamp.isoformat() if self.timestamp else None,

@@ -15,6 +15,7 @@
             Mis <span class="gradient-text">pronósticos</span>
         </h1>
         <p class="text-zinc-500 text-sm mt-3">Elige 1, X o 2 en cada partido. Usa tu 🃏 comodín sabiamente: multiplica los puntos.</p>
+        <p class="text-zinc-500 text-xs mt-2">⚔️ <span class="text-rose-300 font-semibold">Doble o mitad</span> (1 por jornada): si aciertas, <span class="text-white">×2 puntos</span>; si fallas, <span class="text-white">restas puntos</span> (más castigo cuanto más favorito era). Solo para los valientes que quieran remontar.</p>
     </div>
 
     <!-- Multiplier Info Banner -->
@@ -407,6 +408,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         ${pred && pred.es_comodin ? '<span class="chip chip-gold">🃏 Comodín</span>' : ''}
+                        ${pred && pred.es_doble_mitad ? '<span class="chip !bg-rose-500/15 !text-rose-300 !border-rose-400/40">⚔️ Doble o mitad</span>' : ''}
                         ${started || finished ? `<button onclick="openSocialModal(${match.id}, '${match.equipo_local} vs ${match.equipo_visitante}')" class="btn-ghost text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">👥 Ver</button>` : ''}
                     </div>
                 </div>
@@ -446,13 +448,18 @@
                     </button>
                 </div>
 
-                <!-- Comodín button (only if has prediction and not started) -->
+                <!-- Potenciadores (only if has prediction and not started) -->
                 ${pred && !started ? `
-                <div class="mt-4 flex justify-center">
+                <div class="mt-4 flex flex-wrap justify-center gap-2">
                     <button onclick="toggleComodin(${pred.id})"
                         class="comodin-btn text-xs px-4 py-1.5 rounded-full border ${pred.es_comodin ? 'active border-gold' : 'border-white/10 text-zinc-400 hover:border-gold hover:text-gold'} transition-all ${enviado ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}"
                         ${enviado ? 'disabled' : ''}>
                         🃏 ${pred.es_comodin ? 'Quitar Comodín' : 'Usar Comodín'}
+                    </button>
+                    <button onclick="toggleDobleMitad(${pred.id})"
+                        class="text-xs px-4 py-1.5 rounded-full border ${pred.es_doble_mitad ? 'border-rose-400 text-rose-300 bg-rose-500/15' : 'border-white/10 text-zinc-400 hover:border-rose-400 hover:text-rose-300'} transition-all ${enviado ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}"
+                        ${enviado ? 'disabled' : ''}>
+                        ⚔️ ${pred.es_doble_mitad ? 'Quitar Doble o mitad' : 'Doble o mitad'}
                     </button>
                 </div>
                 ` : ''}
@@ -521,6 +528,38 @@
             }
         } catch (err) {
             showToast('error', 'Error al cambiar comodín.');
+        }
+    }
+
+    async function toggleDobleMitad(predId) {
+        try {
+            const res = await apiFetch(`/api/pronostico/${predId}/doble-mitad`, {
+                method: 'PUT',
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                const pred = data.pronostico;
+                // Si se activa, solo puede haber uno por jornada → limpiar el resto en local
+                if (pred.es_doble_mitad) {
+                    Object.values(myPredictions).forEach(p => {
+                        if (p.es_doble_mitad) p.es_doble_mitad = false;
+                    });
+                }
+                myPredictions[pred.partido_id] = pred;
+
+                const container = document.getElementById('matches-container');
+                if (container) container.classList.remove('stagger-children');
+
+                renderMatches();
+                updateComodinStatus();
+                updateProgressBanner();
+                showToast('success', data.message);
+            } else {
+                showToast('error', data.error);
+            }
+        } catch (err) {
+            showToast('error', 'Error al cambiar "Doble o mitad".');
         }
     }
 
