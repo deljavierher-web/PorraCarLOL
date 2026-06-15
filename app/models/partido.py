@@ -22,6 +22,9 @@ class Partido(db.Model):
         db.String(1), nullable=True
     )  # "1", "X", "2" o None
     finalizado = db.Column(db.Boolean, default=False, nullable=False)
+    # Marca persistente: True una vez se ha enviado el aviso de WhatsApp con el resultado.
+    # Evita depender de ventanas de tiempo frágiles y sobrevive a reinicios del servidor.
+    resultado_notificado = db.Column(db.Boolean, default=False, nullable=False)
     api_match_id = db.Column(
         db.String(100), nullable=True, unique=True, index=True
     )  # ID externo para sincronización

@@ -74,8 +74,9 @@ def notify_partido_empieza(equipo_local: str, equipo_visitante: str, minutos: in
 
 
 def notify_resultado(equipo_local: str, equipo_visitante: str, resultado: str,
-                     acertaron: list[str], fallaron: list[str]):
-    """Notifica el resultado de un partido y quién acertó."""
+                     acertaron: list[str], fallaron: list[str],
+                     rachas: list[tuple[str, int]] | None = None) -> bool:
+    """Notifica el resultado de un partido, quién acertó y quién está en racha."""
     res_label = {
         "1": f"Gana *{equipo_local}*",
         "2": f"Gana *{equipo_visitante}*",
@@ -88,7 +89,13 @@ def notify_resultado(equipo_local: str, equipo_visitante: str, resultado: str,
     if fallaron:
         lineas.append("❌ Fallan: " + ", ".join(fallaron))
 
-    send_whatsapp("\n".join(lineas))
+    if rachas:
+        lineas.append("")
+        lineas.append("🔥 *En racha:*")
+        for username, n in rachas:
+            lineas.append(f"  • {username} — {n} aciertos seguidos")
+
+    return send_whatsapp("\n".join(lineas))
 
 
 def notify_ranking_diario(ranking: list[dict]):

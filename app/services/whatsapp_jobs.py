@@ -7,9 +7,9 @@ from datetime import datetime, timezone, timedelta
 
 logger = logging.getLogger(__name__)
 
-# Evita enviar el mismo aviso dos veces en la misma ventana de tiempo
-_notified_partidos: set[int] = set()   # IDs de partidos ya notificados (empieza en X min)
-_notified_resultados: set[int] = set() # IDs de partidos cuyo resultado ya se notificó
+# Evita enviar el mismo aviso "empieza en X min" dos veces (dedup en memoria;
+# los resultados usan la marca persistente Partido.resultado_notificado)
+_notified_partidos: set[int] = set()
 
 
 def check_and_notify_pendientes():
@@ -105,28 +105,29 @@ def notify_partidos_proximos():
 
 
 def notify_resultados_recientes():
-    """Notifica resultados de partidos finalizados en los últimos 20 minutos."""
+    """
+    Notifica el resultado de partidos finalizados que aún no se han avisado.
+    Usa la marca persistente `resultado_notificado` (no una ventana de tiempo),
+    así que funciona aunque el partido se finalice horas después del inicio
+    y sobrevive a reinicios del servidor.
+    """
     from app.models.partido import Partido
     from app.models.prediccion import Prediccion
     from app.models.usuario import Usuario
     from app.services.whatsapp_service import notify_resultado
+    from app.extensions import db
 
-    # No tenemos timestamp de cuándo se finalizó, así que buscamos partidos
-    # cuya fecha_partido fue hace menos de 2h y están finalizados.
-    now = datetime.now(timezone.utc)
-    hace_dos_horas = now - timedelta(hours=2)
+    pendientes = (
+        Partido.query.filter(
+            Partido.finalizado == True,
+            Partido.resultado_notificado == False,
+            Partido.resultado_real.isnot(None),
+        )
+        .order_by(Partido.fecha_partido.asc())
+        .all()
+    )
 
-    recientes = Partido.query.filter(
-        Partido.finalizado == True,
-        Partido.fecha_partido >= hace_dos_horas,
-        Partido.fecha_partido <= now,
-    ).all()
-
-    for p in recientes:
-        if p.id in _notified_resultados:
-            continue
-        _notified_resultados.add(p.id)
-
+    for p in pendientes:
         # Quién acertó y quién falló
         preds = Prediccion.query.filter_by(partido_id=p.id).all()
         acertaron, fallaron = [], []
@@ -139,5 +140,54 @@ def notify_resultados_recientes():
             else:
                 fallaron.append(u.username)
 
-        notify_resultado(p.equipo_local, p.equipo_visitante, p.resultado_real,
-                         acertaron, fallaron)
+        # Rachas tras este partido (jugadores con 3+ aciertos seguidos)
+        rachas = _calcular_rachas(minimo=3)
+
+        enviado = notify_resultado(
+            p.equipo_local, p.equipo_visitante, p.resultado_real,
+            acertaron, fallaron, rachas=rachas,
+        )
+
+        # Marca persistente solo si el envío fue OK (si el bridge está caído,
+        # se reintentará en la siguiente pasada)
+        if enviado:
+            p.resultado_notificado = True
+            db.session.commit()
+
+
+def _calcular_rachas(minimo: int = 3) -> list[tuple[str, int]]:
+    """
+    Devuelve [(username, longitud_racha), ...] de jugadores que llevan
+    `minimo` o más aciertos consecutivos en sus últimos partidos finalizados.
+    Ordenado de racha más larga a más corta.
+    """
+    from app.models.partido import Partido
+    from app.models.prediccion import Prediccion
+    from app.models.usuario import Usuario
+
+    # Partidos finalizados en orden cronológico (más reciente primero)
+    finalizados = (
+        Partido.query.filter(
+            Partido.finalizado == True,
+            Partido.resultado_real.isnot(None),
+        )
+        .order_by(Partido.fecha_partido.desc())
+        .all()
+    )
+
+    rachas = []
+    for u in Usuario.query.filter_by(es_administrador=False, aprobado=True).all():
+        racha = 0
+        for p in finalizados:
+            pred = Prediccion.query.filter_by(usuario_id=u.id, partido_id=p.id).first()
+            if not pred:
+                continue  # no apostó ese partido: no rompe la racha, lo salta
+            if pred.pronostico == p.resultado_real:
+                racha += 1
+            else:
+                break  # falló: racha actual cortada
+        if racha >= minimo:
+            rachas.append((u.username, racha))
+
+    rachas.sort(key=lambda x: x[1], reverse=True)
+    return rachas
